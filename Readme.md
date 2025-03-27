@@ -25,3 +25,17 @@ If you have any problems with or questions about [GbOffice Document Server][2], 
 ## License
 
 web-apps is released under an GNU AGPL v3.0 license. See the LICENSE file for more information.
+
+## build
+
+### install dependence
+`cd build && npm install`
+`npm install -g bower grunt-cli`
+
+`bower install`
+`npm install socket.io`
+
+### build
+`grunt`
+
+
