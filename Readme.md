@@ -12,7 +12,7 @@ Until 2019-10-23 the repository was called web-apps-pro.
 
 Official website: [https://www.gboffice.com/](https://www.gboffice.com "https://www.gboffice.com")
 
-Code repository: [https://github.com/gboffice/web-apps](https://github.com/gboffice/web-apps "https://github.com/gboffice/web-apps")
+Code repository: [https://github.com/GbOffice/web-apps](https://github.com/GbOffice/web-apps "https://github.com/GbOffice/web-apps")
 
 ## User feedback and support
 
