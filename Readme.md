@@ -2,7 +2,7 @@
 
 ## web-apps
 
-The frontend for [GbOffice Document Server][2] and [GbOffice Desktop Editors](https://github.com/GbOffice/DesktopEditors). Builds the program interface and allows the user create, edit, save and export text documents, spreadsheets, and presentations.
+The frontend for [ONLYOFFICE Document Server][2] and [ONLYOFFICE Desktop Editors](https://github.com/ONLYOFFICE/DesktopEditors). Builds the program interface and allows the user create, edit, save and export text documents, spreadsheets, and presentations.
 
 ## Previous versions
 
@@ -10,32 +10,18 @@ Until 2019-10-23 the repository was called web-apps-pro.
 
 ## Project information
 
-Official website: [https://www.gboffice.com/](https://www.gboffice.com "https://www.gboffice.com")
+Official website: [https://www.onlyoffice.com/](https://www.onlyoffice.com "https://www.onlyoffice.com")
 
-Code repository: [https://github.com/GbOffice/web-apps](https://github.com/GbOffice/web-apps "https://github.com/GbOffice/web-apps")
+Code repository: [https://github.com/ONLYOFFICE/web-apps](https://github.com/ONLYOFFICE/web-apps "https://github.com/ONLYOFFICE/web-apps")
 
 ## User feedback and support
 
-If you have any problems with or questions about [GbOffice Document Server][2], please visit our official forum: [forum.gboffice.com][1] or you can ask and answer ONLYOFFICE development questions on [Stack Overflow][3].
+If you have any problems with or questions about [ONLYOFFICE Document Server][2], please visit our official forum: [forum.onlyoffice.com][1] or you can ask and answer ONLYOFFICE development questions on [Stack Overflow][3].
 
-  [1]: https://forum.gboffice.com
-  [2]: https://github.com/GbOffice/DocumentServer
-  [3]: http://stackoverflow.com/questions/tagged/gboffice
+  [1]: https://forum.onlyoffice.com
+  [2]: https://github.com/ONLYOFFICE/DocumentServer
+  [3]: http://stackoverflow.com/questions/tagged/onlyoffice
 
 ## License
 
 web-apps is released under an GNU AGPL v3.0 license. See the LICENSE file for more information.
-
-## build
-
-### install dependence
-`cd build && npm install`
-`npm install -g bower grunt-cli`
-
-`bower install`
-`npm install socket.io`
-
-### build
-`grunt`
-
-

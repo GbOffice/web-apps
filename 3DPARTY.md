@@ -15,5 +15,4 @@
 * Framework7 8.0.5 ([MIT License](https://github.com/framework7io/framework7/blob/master/LICENSE))
 * XRegExp 3.0.0 ([MIT License](https://github.com/slevithan/xregexp/blob/master/LICENSE))
 * MobX 6.7.0 ([MIT License](https://github.com/mobxjs/mobx/blob/main/LICENSE))
-* ONLYOFFICE 8.3.1 ([AGPL License](https://github.com/ONLYOFFICE/web-apps/blob/master/LICENSE.txt))
 
