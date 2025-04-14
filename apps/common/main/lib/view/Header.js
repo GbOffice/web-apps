@@ -140,7 +140,7 @@ define([
 
         var templateLeftBox = '<section class="logo">' +
                                 '<div id="header-logo"><i></i></div>' +
-                            '</section>';
+                            '</section>';//样式隐藏
 
             var templateTitleBox = '<section id="box-document-title">' +
                                 '<div class="extra"></div>' +
