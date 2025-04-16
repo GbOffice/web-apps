@@ -189,6 +189,11 @@
         // }
         display: none;
     }
+
+
+    #box-right-btn-group {
+        flex-shrink: 0;
+    }
 }
 
 #tlb-box-users {
@@ -558,6 +563,8 @@
     color: @text-toolbar-header;
     position: relative;
     z-index: @zindex-navbar + 3;
+    align-items: center;
+
 
     .btn-slot {
         display: inline-block;
@@ -625,8 +632,11 @@
    }
 
     .lr-separator {
-        flex-grow: 1;
+        // flex-grow: 1;
+        // background-color: red;
     }
+
+    
 }
 
 #box-doc-name, #box-document-title {
@@ -646,5 +656,6 @@
         }
     }
 }
+
 
 

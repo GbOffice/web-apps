@@ -1,38 +1,60 @@
 .nav-tabs {
     white-space: nowrap;
     overflow: hidden;
+    border: none;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    height: 100%;
 
     > li {
         float: none;
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        margin: 0 4px;
+        height: 32px;
+        border-radius: 6px;
+        transition: all 0.25s ease;
 
         &.active {
             > span, > span:hover, > span:focus {
-                background-color: @background-normal-ie;
-                background-color: @background-normal;
-                color: @text-normal-ie;
+                background-color: fade(@background-normal, 10%);
                 color: @text-normal;
-                border-color: @background-normal-ie;
-                border-color: @background-normal;
-                cursor: pointer;
+                border: none;
+                position: relative;
+
+                &::before {
+                    content: '';
+                    position: absolute;
+                    bottom: 4px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    width: 24px;
+                    height: 2px;
+                    background-color: currentColor;
+                    border-radius: 2px;
+                    transition: all 0.25s ease;
+                }
             }
         }
 
         &:not(.dragged) {
-            transition: left .2s;
+            transition: all 0.25s ease;
         }
 
         > span {
-            display: inline;
-            background-color: @background-toolbar-ie;
-            background-color: @background-toolbar;
-            color: @text-secondary-ie;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: transparent;
             color: @text-secondary;
-
-            padding-top: 0;
-            padding-bottom: 0;
-            white-space: pre;
+            border: none;
+            padding: 0 16px;
+            min-width: 80px;
+            height: 100%;
+            white-space: nowrap;
             text-align: center;
+            transition: all 0.25s ease;
 
             &::after {
                 content: attr(tabtitle);
@@ -41,25 +63,26 @@
             }
 
             &:hover, &:focus {
-                background-color: @background-toolbar-ie;
-                background-color: @background-toolbar;
-                border-color: @background-toolbar-ie;
-                border-color: @background-toolbar;
-                cursor: pointer;
+                background-color: fade(@background-toolbar, 5%);
+                border: none;
+                color: @text-normal;
             }
+        }
+
+        &:hover {
+            background-color: fade(@highlight-header-button-hover, 80%);
         }
     }
 
     &.bottom {
-        border-bottom: none;
-        border-top: none;
+        border: none;
 
         > li {
             vertical-align: middle;
 
             > span {
-                padding-bottom: 1px;
-                border-radius: 0 0 4px 4px;
+                padding: 0 16px;
+                border-radius: 6px;
             }
         }
     }

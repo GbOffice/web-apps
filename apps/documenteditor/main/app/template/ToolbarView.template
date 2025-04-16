@@ -1,4 +1,6 @@
 <div class="toolbar toolbar-view">
+
+
     <div class="box-tabs">
         <div class="extra left"></div>
         <%= tabsmarkup %>

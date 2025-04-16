@@ -29,6 +29,12 @@
 
 .border-radius(@radius: 2px) {
     border-radius: @radius;
+    -webkit-border-radius: @radius;
+}
+
+.border-radius-custom(@topleft: 3px, @topright: 3px, @bottomright: 3px, @bottomleft: 3px) {
+    border-radius: @topleft @topright @bottomright @bottomleft;
+    -webkit-border-radius: @topleft @topright @bottomright @bottomleft;
 }
 
 .position(@type: absolute, @left: 0, @top: 0, @right: 0, @bottom: 0) {
@@ -50,10 +56,9 @@
 // User select
 .user-select(@select: none) {
     -webkit-user-select: @select;
-       -moz-user-select: @select;
-        -ms-user-select: @select;
-//         -o-user-select: @select;
-            user-select: @select;
+    -moz-user-select: @select;
+    -ms-user-select: @select;
+    user-select: @select;
 }
 
 .toolbar-btn-icon(@icon-class, @index, @icon-size, @offset-x: 0, @offset-y: 0) {
@@ -858,4 +863,57 @@
 .text-secondary {
     color: @text-secondary-ie;
     color: @text-secondary;
+}
+
+// 添加新的过渡效果混合
+.transition(@property: all, @duration: 0.3s, @timing: ease-in-out) {
+    transition: @property @duration @timing;
+}
+
+// 添加弹性布局混合
+.flex(@direction: row, @justify: flex-start, @align: center) {
+    display: flex;
+    flex-direction: @direction;
+    justify-content: @justify;
+    align-items: @align;
+}
+
+// 添加文本溢出处理混合
+.text-overflow(@type: ellipsis) {
+    overflow: hidden;
+    text-overflow: @type;
+    white-space: nowrap;
+}
+
+// 添加阴影效果混合
+.box-shadow(@x: 0, @y: 1px, @blur: 2px, @spread: 0, @color: rgba(0,0,0,0.1)) {
+    box-shadow: @x @y @blur @spread @color;
+}
+
+// 添加渐变背景混合
+.gradient-background(@start-color, @end-color, @direction: to bottom) {
+    background: @start-color;
+    background: linear-gradient(@direction, @start-color, @end-color);
+}
+
+// 添加动画混合
+.keyframes(@name, @rules) {
+    @-webkit-keyframes @name { @rules(); }
+    @keyframes @name { @rules(); }
+}
+
+.animation(@name, @duration: 1s, @timing-function: ease, @delay: 0s, @iteration-count: 1) {
+    animation: @name @duration @timing-function @delay @iteration-count;
+}
+
+// 添加Z轴变换混合
+.transform-z(@z: 0) {
+    transform: translateZ(@z);
+    -webkit-transform: translateZ(@z);
+}
+
+// 添加毛玻璃效果混合
+.backdrop-blur(@blur: 5px) {
+    backdrop-filter: blur(@blur);
+    -webkit-backdrop-filter: blur(@blur);
 }

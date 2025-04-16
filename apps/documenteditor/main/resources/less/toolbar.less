@@ -1,20 +1,22 @@
-
 .toolbar {
+
+    // background-color: red;
     &.masked {
         button.disabled .icon:not(.no-mask) {
             //background-position-x: 0px !important;
         }
+
         .group:not(.no-mask) {
             opacity: 0.4;
         }
     }
 
     .font-attr {
-        > .btn-slot:not(:last-child):not(.split) {
+        >.btn-slot:not(:last-child):not(.split) {
             .margin-right-4();
         }
 
-        > .btn-slot:not(:last-child).split {
+        >.btn-slot:not(:last-child).split {
             .margin-right-2();
         }
     }
@@ -33,14 +35,18 @@
     display: inline-block;
     width: 158px;
     .padding-left(3px);
+
     .item {
         .box-shadow(none);
         .margin-x(6px, 4px);
-        &:hover, &.selected{
-            .box-shadow( 0 0 0 2px @border-preview-select-ie);
-            .box-shadow( 0 0 0 @scaled-two-px-value @border-preview-select);
+
+        &:hover,
+        &.selected {
+            .box-shadow(0 0 0 2px @border-preview-select-ie);
+            .box-shadow(0 0 0 @scaled-two-px-value @border-preview-select);
         }
     }
+
     .item-symbol {
         font-family: @font-family-base;
         font-size: 14px;
@@ -68,7 +74,7 @@
     @contents-menu-item-height: 72px;
     --bckgHOffset: ~"0px";
 
-    > li > a.item-contents {
+    >li>a.item-contents {
         div {
             background-color: #fff;
             width: 248px;
@@ -87,7 +93,8 @@
             }
         }
 
-        &:hover, &:focus {
+        &:hover,
+        &:focus {
             background-color: transparent;
 
             div {
@@ -106,7 +113,7 @@
         margin: 0 10px;
 
         &.disabled {
-            > .item {
+            >.item {
                 cursor: default;
                 opacity: @component-disabled-opacity-ie;
                 opacity: @component-disabled-opacity;
@@ -138,6 +145,7 @@
 // menu zoom
 .dropdown-menu .menu-zoom {
     line-height: @line-height-base;
+
     .title {
         padding: 5px 5px 5px 20px;
         //max-width: 95px;
@@ -151,6 +159,7 @@
 
     .btn.next {
         margin: 2px 5px 0 0;
+
         .rtl & {
             margin: 2px 0 0 0 !important;
         }
@@ -158,6 +167,7 @@
 
     .btn.prev {
         margin-top: 2px;
+
         .rtl & {
             margin: 2px 0 0 5px;
         }
@@ -210,6 +220,7 @@
     border-radius: 3px;
     overflow: hidden;
     box-shadow: 0 5px 15px -5px rgba(0, 0, 0, 0.2);
+
     .ie &,
     .winxp & {
         overflow: visible;
@@ -220,9 +231,11 @@
     .separator {
         height: 30px;
     }
+
     &.has-open-menu {
         z-index: @zindex-navbar + 3;
     }
+
     .btn-toolbar {
         display: flex;
         justify-content: center;
@@ -241,13 +254,17 @@
         background-color: @canvas-content-background;
     }
 
-    a:hover, a:focus, a.checked {
+    a:hover,
+    a:focus,
+    a.checked {
         background-color: transparent;
+
         .menu-list-preview {
             .box-shadow(0 0 0 2px @border-control-focus-ie);
             .box-shadow(0 0 0 @scaled-two-px-value @border-control-focus);
         }
     }
+
     a.checked {
         &:before {
             display: none !important;
@@ -266,7 +283,7 @@
         }
     }
 
-    .list-level > a {
+    .list-level>a {
         .padding-x(12px, 20px);
     }
 }
@@ -317,8 +334,63 @@
         margin: 0 8px 0 2px;
         border: @scaled-one-px-value-ie solid @border-color-shading-ie;
         border: @scaled-one-px-value solid @border-color-shading;
+
         .rtl & {
             margin: 0 2px 0 8px;
         }
     }
+}
+
+#id-box-doc-name {
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+    padding: 0px 2px;
+}
+
+.btn-slot {
+    width: auto;
+    display: inline-block;
+}
+
+
+
+#title-doc-name {
+    white-space: pre;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    text-align: center;
+    .font-size-medium();
+    line-height: 24px;
+    padding: 1px 8px;
+    background-color: transparent;
+    border: 0 none;
+    cursor: default;
+    .user-select(text);
+
+    &:hover:not(:disabled):not(:focus) {
+        background-color: @highlight-header-button-hover-ie;
+        background-color: @highlight-header-button-hover;
+        border-radius: 1px;
+        cursor: text;
+    }
+
+    &:focus {
+        background-color: @highlight-header-button-pressed-ie;
+        background-color: @highlight-header-button-pressed;
+        border-radius: 1px;
+        cursor: text;
+    }
+
+    .rtl & {
+        direction: rtl;
+    }
+}
+
+
+#id-box-doc-name {
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+    padding: 0px 2px;
 }

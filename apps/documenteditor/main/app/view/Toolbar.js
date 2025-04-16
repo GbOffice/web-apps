@@ -58,8 +58,8 @@ define([
     'common/main/lib/component/Window',
     'common/main/lib/component/ComboBoxFonts',
     'common/main/lib/component/ComboDataView'
-    ,'common/main/lib/component/SynchronizeTip'
-    ,'common/main/lib/component/Mixtbar'
+    , 'common/main/lib/component/SynchronizeTip'
+    , 'common/main/lib/component/Mixtbar'
 ], function ($, _, Backbone, template, template_view) {
     'use strict';
 
@@ -67,57 +67,57 @@ define([
         Common.enumLock = {};
 
     var enumLock = {
-        undoLock:       'can-undo',
-        redoLock:       'can-redo',
-        copyLock:       'can-copy',
-        paragraphLock:  'para-lock',
-        headerLock:     'header-lock',
+        undoLock: 'can-undo',
+        redoLock: 'can-redo',
+        copyLock: 'can-copy',
+        paragraphLock: 'para-lock',
+        headerLock: 'header-lock',
         headerFooterLock: 'header-footer-lock',
-        chartLock:      'chart-lock',
-        imageLock:      'image-lock',
-        richEditLock:   'rich-edit-lock',
-        plainEditLock:  'plain-edit-lock',
-        richDelLock:    'rich-del-lock',
-        plainDelLock:   'plain-del-lock',
-        contentLock:    'content-lock',
-        mmergeLock:     'mmerge-lock',
-        dropcapLock:    'dropcap-lock',
-        docPropsLock:   'doc-props-lock',
-        docSchemaLock:  'doc-schema-lock',
-        hyperlinkLock:  'can-hyperlink',
-        inSmartart:     'in-smartart',
+        chartLock: 'chart-lock',
+        imageLock: 'image-lock',
+        richEditLock: 'rich-edit-lock',
+        plainEditLock: 'plain-edit-lock',
+        richDelLock: 'rich-del-lock',
+        plainDelLock: 'plain-del-lock',
+        contentLock: 'content-lock',
+        mmergeLock: 'mmerge-lock',
+        dropcapLock: 'dropcap-lock',
+        docPropsLock: 'doc-props-lock',
+        docSchemaLock: 'doc-schema-lock',
+        hyperlinkLock: 'can-hyperlink',
+        inSmartart: 'in-smartart',
         inSmartartInternal: 'in-smartart-internal',
         inSpecificForm: 'in-specific-form',
-        inChart:        'in-chart',
-        inEquation:     'in-equation',
-        inHeader:       'in-header',
-        inImage:        'in-image',
-        inImagePara:    'in-image-para',
-        inImageInline:  'in-image-inline',
-        inFootnote:     'in-footnote',
-        inControl:      'in-control',
-        inLightTheme:   'light-theme',
-        controlPlain:   'control-plain',
-        noParagraphSelected:  'no-paragraph',
-        cantAddTable:   'cant-add-table',
+        inChart: 'in-chart',
+        inEquation: 'in-equation',
+        inHeader: 'in-header',
+        inImage: 'in-image',
+        inImagePara: 'in-image-para',
+        inImageInline: 'in-image-inline',
+        inFootnote: 'in-footnote',
+        inControl: 'in-control',
+        inLightTheme: 'light-theme',
+        controlPlain: 'control-plain',
+        noParagraphSelected: 'no-paragraph',
+        cantAddTable: 'cant-add-table',
         cantAddQuotedComment: 'cant-add-quoted-comment',
-        cantPrint:      'cant-print',
+        cantPrint: 'cant-print',
         cantAddImagePara: 'cant-add-image-para',
         cantAddEquation: 'cant-add-equation',
-        cantAddChart:   'cant-add-chart',
+        cantAddChart: 'cant-add-chart',
         cantAddPageNum: 'cant-add-page-num',
-        cantPageBreak:  'cant-page-break',
-        cantUpdateTOF:  'cant-update-tof',
+        cantPageBreak: 'cant-page-break',
+        cantUpdateTOF: 'cant-update-tof',
         cantAddTextTOF: 'cant-addtext-tof',
-        cantGroup:      'cant-group',
-        cantWrap:       'cant-wrap',
-        cantArrange:    'cant-arrange',
-        noObjectSelected:  'no-object',
-        lostConnect:    'disconnect',
+        cantGroup: 'cant-group',
+        cantWrap: 'cant-wrap',
+        cantArrange: 'cant-arrange',
+        noObjectSelected: 'no-object',
+        lostConnect: 'disconnect',
         disableOnStart: 'on-start',
-        complexForm:    'complex-form',
-        formsNoRoles:   'no-roles',
-        fixedForm:      'fixed-form',
+        complexForm: 'complex-form',
+        formsNoRoles: 'no-roles',
+        fixedForm: 'fixed-form',
         fileMenuOpened: 'file-menu-opened',
         changeModeLock: 'change-mode-lock',
         noStyles: 'no-styles',
@@ -128,10 +128,73 @@ define([
             Common.enumLock[key] = enumLock[key];
         }
     }
+    //文档名称聚焦
+    function onFocusDocName(e) {
+        var me = this;
+        me.imgCrypted && me.imgCrypted.toggleClass('hidden', true);
+        me.isSaveDocName = false;
+        if (me.withoutExt) return;
+        var name = me.cutDocName($labelDocName.val());
+        me.withoutExt = true;
+        _.delay(function () {
+            me.setDocTitle(name);
+            $labelDocName.select();
+        }, 100);
+    }
+    //文档名称改变
+    function onDocNameChanged(editcomplete) {
+        var me = this,
+            name = $labelDocName.val();
+        name = name.trim();
+        if (!_.isEmpty(name) && me.cutDocName(me.documentCaption) !== name) {
+            me.isSaveDocName = true;
+            if (/[\t*\+:\"<>?|\\\\/]/gim.test(name)) {
+                _.defer(function () {
+                    Common.UI.error({
+                        msg: (new Common.Views.RenameDialog).txtInvalidName + "*+:\"<>?|\/"
+                        , callback: function () {
+                            _.delay(function () {
+                                $labelDocName.focus();
+                            }, 50);
+                        }
+                    });
+                })
+            } else if (me.withoutExt) {
+                name = me.cutDocName(name);
+                me.fireEvent('rename', [name]);
+                name += me.fileExtention;
+                me.withoutExt = false;
+                me.setDocTitle(name);
+                editcomplete && Common.NotificationCenter.trigger('edit:complete', me);
+            }
+        } else {
+            editcomplete && Common.NotificationCenter.trigger('edit:complete', me);
+        }
+    }
+    //键盘事件
+    function onDocNameKeyDown(e) {
+        var me = this;
+        if (e.keyCode === Common.UI.Keys.RETURN) {
+            onDocNameChanged.call(me, true);
+        } else if (e.keyCode === Common.UI.Keys.ESC) {
+            me.setDocTitle(me.cutDocName(me.documentCaption));
+            Common.NotificationCenter.trigger('edit:complete', this);
+        } else {
+            _.delay(function () {
+                me.setDocTitle();
+            }, 10);
+        }
+    }
 
-    DE.Views.Toolbar =  Common.UI.Mixtbar.extend(_.extend((function(){
+
+
+
+    DE.Views.Toolbar = Common.UI.Mixtbar.extend(_.extend((function () {
 
         return {
+            options: {
+                documentCaption: '',
+            },
             el: '#toolbar',
 
             // Compile our stats template
@@ -142,12 +205,15 @@ define([
                 //
             },
 
-            initialize: function () {
-                var me = this;
+            initialize: function (options) {
 
+                var me = this;
                 /**
                  * UI Components
                  */
+                this.options = this.options ? _.extend(this.options, options) : options;
+                this.documentCaption = this.options.documentCaption;
+                this.isModified = false;
 
                 this.paragraphControls = [];
                 this.toolbarControls = [];
@@ -159,27 +225,154 @@ define([
                 };
 
                 Common.NotificationCenter.on('app:ready', me.onAppReady.bind(this));
-                return this;
+
+               
             },
+
+            //设置文档名称
+            setDocumentCaption: function (value) {
+                console.log(value, 'toolbar.js的value');
+
+                !value && (value = '');
+
+                this.documentCaption = value;
+                console.log(this.documentCaption, 'toolbar.js');
+
+
+                var idx = this.documentCaption.lastIndexOf('.');
+                this.fileExtention = idx > 0 ? this.documentCaption.substring(idx) : '';
+                this.isModified && (value += '*');
+                this.readOnly && (value += ' (' + this.textReadOnly + ')');
+                if ($labelDocName) {
+                    this.setDocTitle(value);
+                }
+                return value;
+            },
+            //获取文档名称
+            getDocumentCaption: function () {
+                return this.documentCaption;
+            },
+
+            //设置文档名称可重命名
+            setDocumentChanged: function (changed) {
+                this.isModified = changed;
+
+                var _name = this.documentCaption;
+
+                changed && (_name += '*');
+
+                this.setDocTitle(_name);
+            },
+
+            //设置文档名称可重命名
+            setCanRename: function (rename) {
+                var me = this;
+                me.options.canRename = rename;
+                if ($labelDocName) {
+                    var label = $labelDocName;
+                    if (rename) {
+                        label.removeAttr('disabled').tooltip({
+                            title: me.txtRename,
+                            placement: 'cursor'
+                        }
+                        );
+
+                        label.on({
+                            'keydown': onDocNameKeyDown.bind(this),
+                            'focus': onFocusDocName.bind(this),
+                            'blur': function (e) {
+                                !me.isSaveDocName && onDocNameChanged.call(me);
+                                me.imgCrypted && me.imgCrypted.toggleClass('hidden', false);
+                                Common.Utils.isGecko && (label[0].selectionStart = label[0].selectionEnd = 0);
+                                if (!me.isSaveDocName) {
+                                    me.withoutExt = false;
+                                    me.setDocTitle(me.documentCaption);
+                                }
+                            },
+                            'paste': function (e) {
+                                setTimeout(function () {
+                                    var name = me.cutDocName($labelDocName.val());
+                                    me.setDocTitle(name);
+                                });
+                            }
+                        });
+
+                    } else {
+                        label.off();
+                        label.attr('disabled', true);
+                        var tip = label.data('bs.tooltip');
+                        if (tip) {
+                            tip.options.title = '';
+                            tip.setContent();
+                        }
+                    }
+                    label.attr('data-can-copy', rename);
+                }
+            },
+
+
+            //文件名显示到UI
+            setDocTitle: function (name) {
+                var width = this.getTextWidth(name || $labelDocName.val());
+                (width >= 0) && $labelDocName.width(width);
+                name && (width >= 0) && $labelDocName.val(name);
+                if (this._showImgCrypted && width >= 0) {
+                    this.imgCrypted.toggleClass('hidden', false);
+                    this._showImgCrypted = false;
+                }
+                (width >= 0) && onResize();
+            },
+
+            //获取文本宽度
+            getTextWidth: function (text) {
+                if (!this._testCanvas) {
+                    var font = ($labelDocName.css('font-size') + ' ' + $labelDocName.css('font-family')).trim();
+                    if (font) {
+                        var canvas = document.createElement("canvas");
+                        this._testCanvas = canvas.getContext('2d');
+                        this._testCanvas.font = font;
+                    }
+                }
+                if (this._testCanvas) {
+                    var mt = this._testCanvas.measureText(text);
+                    return (mt.actualBoundingBoxLeft !== undefined) ? Math.ceil(Math.abs(mt.actualBoundingBoxLeft) + Math.abs(mt.actualBoundingBoxRight)) + 1 : (mt.width ? Math.ceil(mt.width) + 2 : 0);
+                }
+                return -1;
+            },
+
 
             applyLayout: function (config) {
                 var me = this;
                 me.lockControls = [];
                 var _set = Common.enumLock;
-                if ( config.isEdit ) {
+                if (config.isEdit) {
                     Common.UI.Mixtbar.prototype.initialize.call(this, {
-                            template: _.template(template),
-                            tabs: [
-                                {caption: me.textTabFile, action: 'file', extcls: 'canedit', layoutname: 'toolbar-file', haspanel:false, dataHintTitle: 'F'},
-                                {caption: me.textTabHome, action: 'home', extcls: 'canedit', dataHintTitle: 'H'},
-                                {caption: me.textTabInsert, action: 'ins', extcls: 'canedit', dataHintTitle: 'I'},
-                                {caption: me.textTabLayout, action: 'layout', extcls: 'canedit', layoutname: 'toolbar-layout', dataHintTitle: 'L'},
-                                {caption: me.textTabLinks, action: 'links', extcls: 'canedit', layoutname: 'toolbar-references', dataHintTitle: 'N'}
-                                // undefined, undefined, undefined, undefined,
-                            ],
-                            config: config
-                        }
-                    );
+                        //         template: _.template(template),
+                        //         tabs: [
+                        //             {caption: me.textTabFile, action: 'file', extcls: 'canedit', layoutname: 
+                        //             'toolbar-file', haspanel:false, dataHintTitle: 'F'},
+                        //             {caption: me.textTabHome, action: 'home', extcls: 'canedit', dataHintTitle: 'H'},
+                        //             {caption: me.textTabInsert, action: 'ins', extcls: 'canedit', dataHintTitle: 'I'},
+                        //             {caption: me.textTabLayout, action: 'layout', extcls: 'canedit', layoutname: 
+                        //             'toolbar-layout', dataHintTitle: 'L'},
+                        //             {caption: me.textTabLinks, action: 'links', extcls: 'canedit', layoutname: 
+                        //             'toolbar-references', dataHintTitle: 'N'}
+                        //             // undefined, undefined, undefined, undefined,
+                        //         ],
+                        //         config: config
+                        //     }
+                        // );
+                        template: _.template(template),
+                        renderTo: '#box-document-title .tabs-container',
+                        tabs: [
+                            { caption: me.textTabFile, action: 'file', extcls: 'canedit', layoutname: 'toolbar-file', haspanel: false, dataHintTitle: 'F' },
+                            { caption: me.textTabHome, action: 'home', extcls: 'canedit', dataHintTitle: 'H' },
+                            { caption: me.textTabInsert, action: 'ins', extcls: 'canedit', dataHintTitle: 'I' },
+                            { caption: me.textTabLayout, action: 'layout', extcls: 'canedit', layoutname: 'toolbar-layout', dataHintTitle: 'L' },
+                            { caption: me.textTabLinks, action: 'links', extcls: 'canedit', layoutname: 'toolbar-references', dataHintTitle: 'N' }
+                        ],
+                        config: config
+                    });
 
                     this.btnSaveCls = config.canSaveToFile || config.isDesktopApp && config.isOffline ? 'btn-save' : 'btn-download';
                     this.btnSaveTip = config.canSaveToFile || config.isDesktopApp && config.isOffline ? this.tipSave + Common.Utils.String.platformKey('Ctrl+S') : this.tipDownload;
@@ -382,15 +575,15 @@ define([
                         cls: 'btn-toolbar',
                         iconCls: 'toolbar__icon btn-highlight',
                         lock: [_set.paragraphLock, _set.headerLock, _set.richEditLock, _set.plainEditLock, _set.inChart, _set.inSmartart, _set.inSmartartInternal, _set.previewReviewMode, _set.viewFormMode,
-                                _set.lostConnect, _set.disableOnStart, _set.docLockViewText, _set.docLockForms, _set.docLockCommentsText, _set.viewMode],
+                        _set.lostConnect, _set.disableOnStart, _set.docLockViewText, _set.docLockForms, _set.docLockCommentsText, _set.viewMode],
                         enableToggle: true,
                         allowDepress: true,
                         split: true,
                         menu: new Common.UI.Menu({
                             style: 'min-width: 100px;',
                             items: [
-                                {template: _.template('<div id="id-toolbar-menu-highlight" style="width: 145px; display: inline-block;" class="palette-large"></div>')},
-                                {caption: '--'},
+                                { template: _.template('<div id="id-toolbar-menu-highlight" style="width: 145px; display: inline-block;" class="palette-large"></div>') },
+                                { caption: '--' },
                                 this.mnuHighlightTransparent = new Common.UI.MenuItem({
                                     caption: this.strMenuNoFill,
                                     checkable: true
@@ -423,7 +616,7 @@ define([
                         cls: 'btn-toolbar',
                         iconCls: 'toolbar__icon btn-paracolor',
                         lock: [_set.paragraphLock, _set.headerLock, _set.richEditLock, _set.plainEditLock, _set.inChart, _set.inSmartart, _set.inSmartartInternal, _set.previewReviewMode, _set.viewFormMode,
-                                _set.lostConnect, _set.disableOnStart, _set.docLockViewPara, _set.docLockForms, _set.docLockCommentsPara, _set.viewMode],
+                        _set.lostConnect, _set.disableOnStart, _set.docLockViewPara, _set.docLockForms, _set.docLockCommentsPara, _set.viewMode],
                         split: true,
                         transparent: true,
                         menu: true,
@@ -443,11 +636,11 @@ define([
                         lock: [_set.paragraphLock, _set.headerLock, _set.richEditLock, _set.plainEditLock, _set.previewReviewMode, _set.viewFormMode, _set.lostConnect, _set.disableOnStart, _set.docLockViewText, _set.docLockForms, _set.docLockCommentsText, _set.viewMode],
                         menu: new Common.UI.Menu({
                             items: [
-                                {caption: this.mniSentenceCase, value: Asc.c_oAscChangeTextCaseType.SentenceCase},
-                                {caption: this.mniLowerCase, value: Asc.c_oAscChangeTextCaseType.LowerCase},
-                                {caption: this.mniUpperCase, value: Asc.c_oAscChangeTextCaseType.UpperCase},
-                                {caption: this.mniCapitalizeWords, value: Asc.c_oAscChangeTextCaseType.CapitalizeWords},
-                                {caption: this.mniToggleCase, value: Asc.c_oAscChangeTextCaseType.ToggleCase}
+                                { caption: this.mniSentenceCase, value: Asc.c_oAscChangeTextCaseType.SentenceCase },
+                                { caption: this.mniLowerCase, value: Asc.c_oAscChangeTextCaseType.LowerCase },
+                                { caption: this.mniUpperCase, value: Asc.c_oAscChangeTextCaseType.UpperCase },
+                                { caption: this.mniCapitalizeWords, value: Asc.c_oAscChangeTextCaseType.CapitalizeWords },
+                                { caption: this.mniToggleCase, value: Asc.c_oAscChangeTextCaseType.ToggleCase }
                             ]
                         }),
                         dataHint: '1',
@@ -532,18 +725,18 @@ define([
                         menu: new Common.UI.Menu({
                             style: 'min-width: 60px;',
                             items: [
-                                {caption: '1.0', value: 1.0, checkable: true, toggleGroup: 'linesize'},
-                                {caption: '1.15', value: 1.15, checkable: true, toggleGroup: 'linesize'},
-                                {caption: '1.5', value: 1.5, checkable: true, toggleGroup: 'linesize'},
-                                {caption: '2.0', value: 2.0, checkable: true, toggleGroup: 'linesize'},
-                                {caption: '2.5', value: 2.5, checkable: true, toggleGroup: 'linesize'},
-                                {caption: '3.0', value: 3.0, checkable: true, toggleGroup: 'linesize'}
+                                { caption: '1.0', value: 1.0, checkable: true, toggleGroup: 'linesize' },
+                                { caption: '1.15', value: 1.15, checkable: true, toggleGroup: 'linesize' },
+                                { caption: '1.5', value: 1.5, checkable: true, toggleGroup: 'linesize' },
+                                { caption: '2.0', value: 2.0, checkable: true, toggleGroup: 'linesize' },
+                                { caption: '2.5', value: 2.5, checkable: true, toggleGroup: 'linesize' },
+                                { caption: '3.0', value: 3.0, checkable: true, toggleGroup: 'linesize' }
                             ].concat(config.canBrandingExt && config.customization && config.customization.rightMenu === false || !Common.UI.LayoutManager.isElementVisible('rightMenu') ? [] : [
-                                me.mnuLineSpaceOptions = new Common.UI.MenuItem({caption: this.textLineSpaceOptions, value: 'options'})
+                                me.mnuLineSpaceOptions = new Common.UI.MenuItem({ caption: this.textLineSpaceOptions, value: 'options' })
                             ]).concat([
-                                {caption: '--'},
-                                me.mnuLineSpaceBefore = new Common.UI.MenuItem({caption: this.textAddSpaceBefore, value: 'before', action: 'add'}),
-                                me.mnuLineSpaceAfter = new Common.UI.MenuItem({caption: this.textAddSpaceAfter, value: 'after', action: 'add'})
+                                { caption: '--' },
+                                me.mnuLineSpaceBefore = new Common.UI.MenuItem({ caption: this.textAddSpaceBefore, value: 'before', action: 'add' }),
+                                me.mnuLineSpaceAfter = new Common.UI.MenuItem({ caption: this.textAddSpaceAfter, value: 'after', action: 'add' })
                             ])
                         }),
                         dataHint: '1',
@@ -561,8 +754,8 @@ define([
                         lock: [_set.noParagraphSelected, _set.paragraphLock, _set.headerLock, _set.richEditLock, _set.previewReviewMode, _set.viewFormMode, _set.lostConnect, _set.disableOnStart, _set.docLockViewPara, _set.docLockForms, _set.docLockCommentsPara, _set.fixedForm, _set.viewMode],
                         menu: new Common.UI.Menu({
                             items: [
-                                {caption: me.textDirLtr, value: false, iconCls: 'menu__icon btn-ltr'},
-                                {caption: me.textDirRtl, value: true, iconCls: 'menu__icon btn-rtl'},
+                                { caption: me.textDirLtr, value: false, iconCls: 'menu__icon btn-ltr' },
+                                { caption: me.textDirRtl, value: true, iconCls: 'menu__icon btn-rtl' },
                             ]
                         }),
                         dataHint: '1',
@@ -574,8 +767,8 @@ define([
                     this.numIndentsLeft = new Common.UI.MetricSpinner({
                         step: .1,
                         width: 70,
-                        defaultUnit : "cm",
-                        defaultValue : 0,
+                        defaultUnit: "cm",
+                        defaultValue: 0,
                         value: '0 cm',
                         maxValue: 55.87,
                         minValue: -55.87,
@@ -585,7 +778,7 @@ define([
                         dataHintOffset: 'small'
                     });
                     this.paragraphControls.push(this.numIndentsLeft);
-                    this.spinners.push({cmp: this.numIndentsLeft, step: .1});
+                    this.spinners.push({ cmp: this.numIndentsLeft, step: .1 });
 
                     this.lblIndentsLeft = new Common.UI.Label({
                         caption: this.textIndLeft,
@@ -596,8 +789,8 @@ define([
                     this.numIndentsRight = new Common.UI.MetricSpinner({
                         step: .1,
                         width: 70,
-                        defaultUnit : "cm",
-                        defaultValue : 0,
+                        defaultUnit: "cm",
+                        defaultValue: 0,
                         value: '0 cm',
                         maxValue: 55.87,
                         minValue: -55.87,
@@ -607,7 +800,7 @@ define([
                         dataHintOffset: 'big'
                     });
                     this.paragraphControls.push(this.numIndentsRight);
-                    this.spinners.push({cmp: this.numIndentsRight, step: .1});
+                    this.spinners.push({ cmp: this.numIndentsRight, step: .1 });
 
                     this.lblIndentsRight = new Common.UI.Label({
                         caption: this.textIndRight,
@@ -618,20 +811,20 @@ define([
                     this.numSpacingBefore = new Common.UI.MetricSpinner({
                         step: .01,
                         width: 70,
-                        defaultUnit : "cm",
-                        defaultValue : 0,
+                        defaultUnit: "cm",
+                        defaultValue: 0,
                         value: '0 cm',
                         maxValue: 55.87,
                         minValue: 0,
-                        allowAuto   : true,
-                        autoText    : this.txtAutoText,
+                        allowAuto: true,
+                        autoText: this.txtAutoText,
                         lock: [_set.noParagraphSelected, _set.paragraphLock, _set.headerLock, _set.richEditLock, _set.previewReviewMode, _set.viewFormMode, _set.lostConnect, _set.disableOnStart, _set.docLockViewPara, _set.docLockForms, _set.docLockCommentsPara, _set.fixedForm, _set.viewMode],
                         dataHint: '1',
                         dataHintDirection: 'top',
                         dataHintOffset: 'big'
                     });
                     this.paragraphControls.push(this.numSpacingBefore);
-                    this.spinners.push({cmp: this.numSpacingBefore, step: .01});
+                    this.spinners.push({ cmp: this.numSpacingBefore, step: .01 });
 
                     this.lblSpacingBefore = new Common.UI.Label({
                         caption: this.textSpaceBefore,
@@ -642,20 +835,20 @@ define([
                     this.numSpacingAfter = new Common.UI.MetricSpinner({
                         step: .01,
                         width: 70,
-                        defaultUnit : "cm",
-                        defaultValue : 0,
+                        defaultUnit: "cm",
+                        defaultValue: 0,
                         value: '0 cm',
                         maxValue: 55.87,
                         minValue: 0,
-                        allowAuto   : true,
-                        autoText    : this.txtAutoText,
+                        allowAuto: true,
+                        autoText: this.txtAutoText,
                         lock: [_set.noParagraphSelected, _set.paragraphLock, _set.headerLock, _set.richEditLock, _set.previewReviewMode, _set.viewFormMode, _set.lostConnect, _set.disableOnStart, _set.docLockViewPara, _set.docLockForms, _set.docLockCommentsPara, _set.fixedForm, _set.viewMode],
                         dataHint: '1',
                         dataHintDirection: 'bottom',
                         dataHintOffset: 'small'
                     });
                     this.paragraphControls.push(this.numSpacingAfter);
-                    this.spinners.push({cmp: this.numSpacingAfter, step: .01});
+                    this.spinners.push({ cmp: this.numSpacingAfter, step: .01 });
 
                     this.lblSpacingAfter = new Common.UI.Label({
                         caption: this.textSpaceAfter,
@@ -667,15 +860,15 @@ define([
                         id: 'id-toolbar-btn-hidenchars',
                         cls: 'btn-toolbar',
                         iconCls: 'toolbar__icon btn-paragraph',
-                        lock: [ _set.previewReviewMode, _set.viewFormMode, _set.lostConnect, _set.disableOnStart, _set.docLockForms, _set.viewMode],
+                        lock: [_set.previewReviewMode, _set.viewFormMode, _set.lostConnect, _set.disableOnStart, _set.docLockForms, _set.viewMode],
                         enableToggle: true,
                         split: true,
                         action: 'hidden-chars',
                         menu: new Common.UI.Menu({
                             style: 'min-width: 60px;',
                             items: [
-                                {caption: this.mniHiddenChars, value: 'characters', checkable: true},
-                                {caption: this.mniHiddenBorders, value: 'table', checkable: true}
+                                { caption: this.mniHiddenChars, value: 'characters', checkable: true },
+                                { caption: this.mniHiddenBorders, value: 'table', checkable: true }
                             ]
                         }),
                         dataHint: '1',
@@ -689,7 +882,7 @@ define([
                         cls: 'btn-toolbar',
                         iconCls: 'toolbar__icon ' + (!Common.UI.isRTL() ? 'btn-setmarkers' : 'btn-setmarkers-rtl'),
                         lock: [_set.paragraphLock, _set.headerLock, _set.richEditLock, _set.plainEditLock, _set.inChart, _set.inSmartart, _set.inSmartartInternal, _set.previewReviewMode, _set.viewFormMode,
-                            _set.lostConnect, _set.disableOnStart, _set.docLockViewPara, _set.docLockForms, _set.docLockCommentsPara, _set.fixedForm, _set.viewMode],
+                        _set.lostConnect, _set.disableOnStart, _set.docLockViewPara, _set.docLockForms, _set.docLockCommentsPara, _set.fixedForm, _set.viewMode],
                         enableToggle: true,
                         toggleGroup: 'markersGroup',
                         split: true,
@@ -705,8 +898,8 @@ define([
                         id: 'id-toolbar-btn-numbering',
                         cls: 'btn-toolbar',
                         iconCls: 'toolbar__icon ' + (!Common.UI.isRTL() ? 'btn-numbering' : 'btn-numbering-rtl'),
-                        lock: [_set.paragraphLock, _set.headerLock, _set.richEditLock, _set.plainEditLock, _set.inChart, _set.inSmartart, _set.inSmartartInternal,  _set.previewReviewMode, _set.viewFormMode,
-                            _set.lostConnect, _set.disableOnStart, _set.docLockViewPara, _set.docLockForms, _set.docLockCommentsPara, _set.fixedForm, _set.viewMode],
+                        lock: [_set.paragraphLock, _set.headerLock, _set.richEditLock, _set.plainEditLock, _set.inChart, _set.inSmartart, _set.inSmartartInternal, _set.previewReviewMode, _set.viewFormMode,
+                        _set.lostConnect, _set.disableOnStart, _set.docLockViewPara, _set.docLockForms, _set.docLockCommentsPara, _set.fixedForm, _set.viewMode],
                         enableToggle: true,
                         toggleGroup: 'markersGroup',
                         split: true,
@@ -723,7 +916,7 @@ define([
                         cls: 'btn-toolbar',
                         iconCls: 'toolbar__icon ' + (!Common.UI.isRTL() ? 'btn-multilevels' : 'btn-multilevels-rtl'),
                         lock: [_set.paragraphLock, _set.headerLock, _set.richEditLock, _set.plainEditLock, _set.inChart, _set.inSmartart, _set.inSmartartInternal, _set.previewReviewMode, _set.viewFormMode,
-                                _set.lostConnect, _set.disableOnStart, _set.docLockViewPara, _set.docLockForms, _set.docLockCommentsPara, _set.fixedForm, _set.viewMode],
+                        _set.lostConnect, _set.disableOnStart, _set.docLockViewPara, _set.docLockForms, _set.docLockCommentsPara, _set.fixedForm, _set.viewMode],
                         menu: true,
                         dataHint: '1',
                         dataHintDirection: 'top',
@@ -735,12 +928,12 @@ define([
                     var clone = function (source) {
                         var obj = {};
                         for (var prop in source)
-                            obj[prop] = (typeof(source[prop]) == 'object') ? clone(source[prop]) : source[prop];
+                            obj[prop] = (typeof (source[prop]) == 'object') ? clone(source[prop]) : source[prop];
                         return obj;
                     };
 
                     this.mnuMarkersPicker = {
-                        conf: {index: 0},
+                        conf: { index: 0 },
                         selectByIndex: function (idx) {
                             this.conf.index = idx;
                         },
@@ -756,17 +949,17 @@ define([
                         cls: 'btn-toolbar x-huge icon-top',
                         iconCls: 'toolbar__icon btn-inserttable',
                         lock: [_set.headerLock, _set.richEditLock, _set.plainEditLock, _set.inEquation, _set.controlPlain, _set.richDelLock, _set.plainDelLock, _set.cantAddTable, _set.previewReviewMode,
-                            _set.viewFormMode, _set.lostConnect, _set.disableOnStart, _set.docLockViewIns, _set.docLockForms, _set.docLockCommentsIns, _set.viewMode],
+                        _set.viewFormMode, _set.lostConnect, _set.disableOnStart, _set.docLockViewIns, _set.docLockForms, _set.docLockCommentsIns, _set.viewMode],
                         caption: me.capBtnInsTable,
                         action: 'insert-table',
                         menu: new Common.UI.Menu({
                             items: [
-                                {template: _.template('<div id="id-toolbar-menu-tablepicker" class="dimension-picker" style="margin: 5px 10px;"></div>')},
-                                {caption: this.mniCustomTable, value: 'custom'},
-                                {caption: this.mniDrawTable, value: 'draw', checkable: true},
-                                {caption: this.mniEraseTable, value: 'erase', checkable: true},
-                                {caption: this.mniTextToTable, value: 'convert'},
-                                {caption: this.mniInsertSSE, value: 'sse'}
+                                { template: _.template('<div id="id-toolbar-menu-tablepicker" class="dimension-picker" style="margin: 5px 10px;"></div>') },
+                                { caption: this.mniCustomTable, value: 'custom' },
+                                { caption: this.mniDrawTable, value: 'draw', checkable: true },
+                                { caption: this.mniEraseTable, value: 'erase', checkable: true },
+                                { caption: this.mniTextToTable, value: 'convert' },
+                                { caption: this.mniInsertSSE, value: 'sse' }
                             ]
                         }),
                         dataHint: '1',
@@ -779,14 +972,14 @@ define([
                         id: 'tlbtn-insertimage',
                         cls: 'btn-toolbar x-huge icon-top',
                         iconCls: 'toolbar__icon btn-insertimage',
-                        lock: [_set.paragraphLock, _set.headerLock, _set.inEquation, _set.controlPlain, _set.richDelLock, _set.plainDelLock,  _set.contentLock,  _set.cantAddImagePara,
-                                _set.previewReviewMode, _set.viewFormMode, _set.lostConnect, _set.disableOnStart, _set.docLockViewIns, _set.docLockForms, _set.docLockCommentsIns, _set.viewMode],
+                        lock: [_set.paragraphLock, _set.headerLock, _set.inEquation, _set.controlPlain, _set.richDelLock, _set.plainDelLock, _set.contentLock, _set.cantAddImagePara,
+                        _set.previewReviewMode, _set.viewFormMode, _set.lostConnect, _set.disableOnStart, _set.docLockViewIns, _set.docLockForms, _set.docLockCommentsIns, _set.viewMode],
                         caption: me.capBtnInsImage,
                         menu: new Common.UI.Menu({
                             items: [
-                                {caption: this.mniImageFromFile, value: 'file'},
-                                {caption: this.mniImageFromUrl, value: 'url'},
-                                {caption: this.mniImageFromStorage, value: 'storage'}
+                                { caption: this.mniImageFromFile, value: 'file' },
+                                { caption: this.mniImageFromUrl, value: 'url' },
+                                { caption: this.mniImageFromStorage, value: 'storage' }
                             ]
                         }),
                         action: 'insert-image',
@@ -801,8 +994,8 @@ define([
                         cls: 'btn-toolbar x-huge icon-top',
                         caption: me.capBtnInsChart,
                         iconCls: 'toolbar__icon btn-insertchart',
-                        lock: [ _set.paragraphLock, _set.headerLock, _set.richEditLock, _set.plainEditLock, _set.controlPlain, _set.richDelLock, _set.plainDelLock, _set.contentLock,
-                                _set.chartLock, _set.cantAddChart, _set.previewReviewMode, _set.viewFormMode, _set.lostConnect, _set.disableOnStart, _set.docLockViewIns, _set.docLockForms, _set.docLockCommentsIns, _set.viewMode],
+                        lock: [_set.paragraphLock, _set.headerLock, _set.richEditLock, _set.plainEditLock, _set.controlPlain, _set.richDelLock, _set.plainDelLock, _set.contentLock,
+                        _set.chartLock, _set.cantAddChart, _set.previewReviewMode, _set.viewFormMode, _set.lostConnect, _set.disableOnStart, _set.docLockViewIns, _set.docLockForms, _set.docLockCommentsIns, _set.viewMode],
                         menu: true,
                         action: 'insert-chart',
                         dataHint: '1',
@@ -816,7 +1009,7 @@ define([
                         cls: 'btn-toolbar x-huge icon-top',
                         iconCls: 'toolbar__icon btn-big-text',
                         lock: [_set.paragraphLock, _set.headerLock, _set.inEquation, _set.controlPlain, _set.contentLock, _set.inFootnote, _set.previewReviewMode, _set.viewFormMode,
-                            _set.lostConnect, _set.disableOnStart, _set.docLockViewIns, _set.docLockForms, _set.docLockCommentsIns, _set.viewMode],
+                        _set.lostConnect, _set.disableOnStart, _set.docLockViewIns, _set.docLockForms, _set.docLockCommentsIns, _set.viewMode],
                         caption: me.capBtnInsTextbox,
                         enableToggle: true,
                         split: true,
@@ -833,12 +1026,12 @@ define([
                         cls: 'btn-toolbar x-huge icon-top',
                         iconCls: 'toolbar__icon btn-textart',
                         lock: [_set.paragraphLock, _set.headerLock, _set.inEquation, _set.controlPlain, _set.richDelLock, _set.plainDelLock, _set.contentLock, _set.inFootnote, _set.cantAddImagePara,
-                            _set.previewReviewMode, _set.viewFormMode, _set.lostConnect, _set.disableOnStart, _set.docLockViewIns, _set.docLockForms, _set.docLockCommentsIns, _set.viewMode],
+                        _set.previewReviewMode, _set.viewFormMode, _set.lostConnect, _set.disableOnStart, _set.docLockViewIns, _set.docLockForms, _set.docLockCommentsIns, _set.viewMode],
                         caption: me.capBtnInsTextart,
                         menu: new Common.UI.Menu({
                             cls: 'menu-shapes',
                             items: [
-                                {template: _.template('<div id="id-toolbar-menu-insart" class="margin-left-5" style="width: 239px;"></div>')}
+                                { template: _.template('<div id="id-toolbar-menu-insart" class="margin-left-5" style="width: 239px;"></div>') }
                             ]
                         }),
                         action: 'insert-textart',
@@ -852,7 +1045,7 @@ define([
                         id: 'id-toolbar-btn-editheader',
                         cls: 'btn-toolbar x-huge icon-top',
                         iconCls: 'toolbar__icon btn-editheader',
-                        lock: [ _set.previewReviewMode, _set.viewFormMode, _set.inEquation, _set.lostConnect, _set.disableOnStart, _set.docLockView, _set.docLockForms, _set.docLockComments, _set.viewMode],
+                        lock: [_set.previewReviewMode, _set.viewFormMode, _set.inEquation, _set.lostConnect, _set.disableOnStart, _set.docLockView, _set.docLockForms, _set.docLockComments, _set.viewMode],
                         caption: me.capBtnInsHeader,
                         menu: true,
                         action: 'edit-header',
@@ -867,7 +1060,7 @@ define([
                         cls: 'btn-toolbar x-huge icon-top',
                         iconCls: 'toolbar__icon btn-text-from-file',
                         lock: [_set.paragraphLock, _set.headerLock, _set.richEditLock, _set.plainEditLock, _set.richDelLock, _set.plainDelLock,
-                            _set.previewReviewMode, _set.viewFormMode, _set.lostConnect, _set.disableOnStart, _set.docLockViewIns, _set.docLockForms, _set.docLockCommentsIns, _set.viewMode],
+                        _set.previewReviewMode, _set.viewFormMode, _set.lostConnect, _set.disableOnStart, _set.docLockViewIns, _set.docLockForms, _set.docLockCommentsIns, _set.viewMode],
                         caption: me.capBtnInsTextFromFile,
                         menu: true,
                         dataHint: '1',
@@ -877,7 +1070,7 @@ define([
                     this.paragraphControls.push(this.btnTextFromFile);
 
                     this.mnuPageNumberPosPicker = {
-                        conf: {disabled: false},
+                        conf: { disabled: false },
                         isDisabled: function () {
                             return this.conf.disabled;
                         },
@@ -901,7 +1094,7 @@ define([
                         cls: 'btn-toolbar x-huge icon-top',
                         iconCls: 'toolbar__icon btn-datetime',
                         lock: [_set.paragraphLock, _set.headerLock, _set.richEditLock, _set.plainEditLock, _set.richDelLock, _set.plainDelLock, _set.noParagraphSelected, _set.previewReviewMode,
-                            _set.viewFormMode, _set.lostConnect, _set.disableOnStart, _set.docLockViewIns, _set.docLockForms, _set.docLockCommentsIns, _set.viewMode],
+                        _set.viewFormMode, _set.lostConnect, _set.disableOnStart, _set.docLockViewIns, _set.docLockForms, _set.docLockCommentsIns, _set.viewMode],
                         caption: me.capBtnDateTime,
                         dataHint: '1',
                         dataHintDirection: 'bottom',
@@ -914,7 +1107,7 @@ define([
                         cls: 'btn-toolbar x-huge icon-top',
                         iconCls: 'toolbar__icon btn-quick-field',
                         lock: [_set.paragraphLock, _set.headerLock, _set.richEditLock, _set.plainEditLock, _set.richDelLock, _set.plainDelLock, _set.noParagraphSelected, _set.previewReviewMode,
-                            _set.viewFormMode, _set.lostConnect, _set.disableOnStart, _set.docLockViewIns, _set.docLockForms, _set.docLockCommentsIns, _set.viewMode],
+                        _set.viewFormMode, _set.lostConnect, _set.disableOnStart, _set.docLockViewIns, _set.docLockForms, _set.docLockCommentsIns, _set.viewMode],
                         caption: me.capBtnInsField,
                         dataHint: '1',
                         dataHintDirection: 'bottom',
@@ -926,8 +1119,8 @@ define([
                         id: 'id-toolbar-btn-blankpage',
                         cls: 'btn-toolbar x-huge icon-top',
                         iconCls: 'toolbar__icon btn-blankpage',
-                        lock: [_set.paragraphLock, _set.headerLock, _set.richEditLock, _set.plainEditLock, _set.inEquation, _set.richDelLock, _set.plainDelLock, _set.inHeader,  _set.inFootnote,  _set.inControl,
-                            _set.cantPageBreak, _set.previewReviewMode, _set.viewFormMode, _set.lostConnect, _set.disableOnStart, _set.docLockViewIns, _set.docLockForms, _set.docLockCommentsIns, _set.viewMode],
+                        lock: [_set.paragraphLock, _set.headerLock, _set.richEditLock, _set.plainEditLock, _set.inEquation, _set.richDelLock, _set.plainDelLock, _set.inHeader, _set.inFootnote, _set.inControl,
+                        _set.cantPageBreak, _set.previewReviewMode, _set.viewFormMode, _set.lostConnect, _set.disableOnStart, _set.docLockViewIns, _set.docLockForms, _set.docLockCommentsIns, _set.viewMode],
                         caption: me.capBtnBlankPage,
                         dataHint: '1',
                         dataHintDirection: 'bottom',
@@ -939,11 +1132,11 @@ define([
                         id: 'tlbtn-insertshape',
                         cls: 'btn-toolbar x-huge icon-top',
                         iconCls: 'toolbar__icon btn-insertshape',
-                        lock: [_set.paragraphLock, _set.headerLock, _set.inEquation, _set.controlPlain,  _set.contentLock,  _set.inFootnote, _set.previewReviewMode, _set.viewFormMode,
-                                _set.lostConnect, _set.disableOnStart, _set.docLockViewIns, _set.docLockForms, _set.docLockCommentsIns, _set.viewMode],
+                        lock: [_set.paragraphLock, _set.headerLock, _set.inEquation, _set.controlPlain, _set.contentLock, _set.inFootnote, _set.previewReviewMode, _set.viewFormMode,
+                        _set.lostConnect, _set.disableOnStart, _set.docLockViewIns, _set.docLockForms, _set.docLockCommentsIns, _set.viewMode],
                         caption: me.capBtnInsShape,
                         enableToggle: true,
-                        menu: new Common.UI.Menu({cls: 'menu-shapes menu-insert-shape'}),
+                        menu: new Common.UI.Menu({ cls: 'menu-shapes menu-insert-shape' }),
                         action: 'insert-shape',
                         dataHint: '1',
                         dataHintDirection: 'bottom',
@@ -955,8 +1148,8 @@ define([
                         id: 'tlbtn-insertsmartart',
                         cls: 'btn-toolbar x-huge icon-top',
                         iconCls: 'toolbar__icon btn-smart-art',
-                        lock: [_set.paragraphLock, _set.headerLock, _set.inEquation, _set.controlPlain,  _set.contentLock,  _set.inFootnote, _set.previewReviewMode, _set.viewFormMode,
-                            _set.lostConnect, _set.disableOnStart, _set.docLockViewIns, _set.docLockForms, _set.docLockCommentsIns, _set.viewMode],
+                        lock: [_set.paragraphLock, _set.headerLock, _set.inEquation, _set.controlPlain, _set.contentLock, _set.inFootnote, _set.previewReviewMode, _set.viewFormMode,
+                        _set.lostConnect, _set.disableOnStart, _set.docLockViewIns, _set.docLockForms, _set.docLockCommentsIns, _set.viewMode],
                         caption: me.capBtnInsSmartArt,
                         menu: true,
                         action: 'insert-smartart',
@@ -971,10 +1164,10 @@ define([
                         cls: 'btn-toolbar x-huge icon-top',
                         iconCls: 'toolbar__icon btn-insertequation',
                         lock: [_set.paragraphLock, _set.headerLock, _set.richEditLock, _set.plainEditLock, _set.inChart, _set.controlPlain, _set.richDelLock, _set.plainDelLock, _set.cantAddEquation,
-                            _set.previewReviewMode, _set.viewFormMode, _set.lostConnect, _set.disableOnStart, _set.docLockViewIns, _set.docLockForms, _set.docLockCommentsIns, _set.viewMode],
+                        _set.previewReviewMode, _set.viewFormMode, _set.lostConnect, _set.disableOnStart, _set.docLockViewIns, _set.docLockForms, _set.docLockCommentsIns, _set.viewMode],
                         caption: me.capBtnInsEquation,
                         split: true,
-                        menu: new Common.UI.Menu({cls: 'menu-shapes'}),
+                        menu: new Common.UI.Menu({ cls: 'menu-shapes' }),
                         action: 'insert-equation',
                         dataHint: '1',
                         dataHintDirection: 'bottom',
@@ -987,13 +1180,13 @@ define([
                         cls: 'btn-toolbar x-huge icon-top',
                         iconCls: 'toolbar__icon btn-symbol',
                         lock: [_set.paragraphLock, _set.headerLock, _set.richEditLock, _set.plainEditLock, _set.richDelLock, _set.plainDelLock, _set.noParagraphSelected, _set.previewReviewMode,
-                            _set.viewFormMode, _set.lostConnect, _set.disableOnStart, _set.docLockViewIns, _set.docLockForms, _set.docLockCommentsIns, _set.viewMode],
+                        _set.viewFormMode, _set.lostConnect, _set.disableOnStart, _set.docLockViewIns, _set.docLockForms, _set.docLockCommentsIns, _set.viewMode],
                         caption: me.capBtnInsSymbol,
                         menu: new Common.UI.Menu({
                             style: 'min-width: 100px;',
                             items: [
-                                {template: _.template('<div id="id-toolbar-menu-symbols"></div>')},
-                                {caption: '--'},
+                                { template: _.template('<div id="id-toolbar-menu-symbols"></div>') },
+                                { caption: '--' },
                                 new Common.UI.MenuItem({
                                     caption: this.textMoreSymbols
                                 })
@@ -1011,7 +1204,7 @@ define([
                         cls: 'btn-toolbar x-huge icon-top',
                         iconCls: 'toolbar__icon btn-dropcap icon-rtl',
                         lock: [_set.paragraphLock, _set.headerLock, _set.richEditLock, _set.plainEditLock, _set.inEquation, _set.controlPlain, _set.dropcapLock, _set.previewReviewMode, _set.viewFormMode,
-                            _set.lostConnect, _set.disableOnStart, _set.docLockViewIns, _set.docLockForms, _set.docLockCommentsIns, _set.viewMode],
+                        _set.lostConnect, _set.disableOnStart, _set.docLockViewIns, _set.docLockForms, _set.docLockCommentsIns, _set.viewMode],
                         caption: me.capBtnInsDropcap,
                         menu: new Common.UI.Menu({
                             cls: 'ppm-toolbar shifted-right',
@@ -1041,8 +1234,8 @@ define([
                                     toggleGroup: 'menuDropCap',
                                     value: Asc.c_oAscDropCap.Margin
                                 },
-                                {caption: '--'},
-                                this.mnuDropCapAdvanced = new Common.UI.MenuItem({caption: this.mniEditDropCap})
+                                { caption: '--' },
+                                this.mnuDropCapAdvanced = new Common.UI.MenuItem({ caption: this.mniEditDropCap })
                             ]
                         }),
                         action: 'insert-dropcap',
@@ -1096,13 +1289,13 @@ define([
                                     // iconCls: 'mnu-control-rich',
                                     value: 'checkbox'
                                 },
-                                {caption: '--'},
+                                { caption: '--' },
                                 {
                                     caption: this.textRemoveControl,
                                     iconCls: 'menu__icon btn-cc-remove',
                                     value: 'remove'
                                 },
-                                {caption: '--'},
+                                { caption: '--' },
                                 {
                                     caption: this.mniEditControls,
                                     value: 'settings'
@@ -1111,7 +1304,7 @@ define([
                                     caption: this.mniHighlightControls,
                                     value: 'highlight',
                                     menu: this.mnuHighlightControls = new Common.UI.Menu({
-                                        menuAlign   : 'tl-tr',
+                                        menuAlign: 'tl-tr',
                                         items: [
                                             this.mnuNoControlsColor = new Common.UI.MenuItem({
                                                 id: 'id-toolbar-menu-no-highlight-controls',
@@ -1119,9 +1312,9 @@ define([
                                                 cls: 'shifted-right',
                                                 checkable: true
                                             }),
-                                            {caption: '--'},
-                                            {template: _.template('<div id="id-toolbar-menu-controls-color" style="width: 164px; display: inline-block;"></div>')},
-                                            {caption: '--'},
+                                            { caption: '--' },
+                                            { template: _.template('<div id="id-toolbar-menu-controls-color" style="width: 164px; display: inline-block;"></div>') },
+                                            { caption: '--' },
                                             {
                                                 id: 'id-toolbar-menu-new-control-color',
                                                 template: _.template('<a tabindex="-1" type="menuitem" style="' + (Common.UI.isRTL() ? 'padding-right:12px;' : 'padding-left:12px;') + '">' + this.textNewColor + '</a>')
@@ -1144,7 +1337,7 @@ define([
                         cls: 'btn-toolbar x-huge icon-top',
                         iconCls: 'toolbar__icon btn-columns',
                         lock: [_set.paragraphLock, _set.headerLock, _set.richEditLock, _set.plainEditLock, _set.controlPlain, _set.inImage, _set.inHeader, _set.docPropsLock, _set.previewReviewMode, _set.viewFormMode,
-                            _set.lostConnect, _set.disableOnStart, _set.docLockViewIns, _set.docLockForms, _set.docLockCommentsIns, _set.viewMode],
+                        _set.lostConnect, _set.disableOnStart, _set.docLockViewIns, _set.docLockForms, _set.docLockCommentsIns, _set.viewMode],
                         caption: me.capBtnColumns,
                         menu: new Common.UI.Menu({
                             cls: 'ppm-toolbar shifted-right',
@@ -1189,8 +1382,8 @@ define([
                                     toggleGroup: 'menuColumns',
                                     value: 4
                                 },
-                                {caption: '--'},
-                                {caption: this.textColumnsCustom, value: 'advanced'}
+                                { caption: '--' },
+                                { caption: this.textColumnsCustom, value: 'advanced' }
                             ]
                         }),
                         action: 'insert-columns',
@@ -1287,8 +1480,8 @@ define([
                                     toggleGroup: 'menuPageMargins',
                                     value: [25.4, 50.8, 25.4, 50.8]
                                 },
-                                {caption: '--'},
-                                {caption: this.textPageMarginsCustom, value: 'advanced'}
+                                { caption: '--' },
+                                { caption: this.textPageMarginsCustom, value: 'advanced' }
                             ]
                         }),
                         action: 'page-margins',
@@ -1302,8 +1495,8 @@ define([
                         '<div dir="ltr"><%= parseFloat(Common.Utils.Metric.fnRecalcFromMM(options.value[0]).toFixed(2)) %> <%= Common.Utils.Metric.getCurrentMetricName() %> x ' +
                         '<%= parseFloat(Common.Utils.Metric.fnRecalcFromMM(options.value[1]).toFixed(2)) %> <%= Common.Utils.Metric.getCurrentMetricName() %></div></a>') :
                         _.template('<a id="<%= id %>" tabindex="-1" type="menuitem"><div><b><%= caption %></b></div>' +
-                        '<div dir="ltr"><span dir="ltr"><%= Common.Utils.Metric.getCurrentMetricName() %> </span><span dir="ltr"><%= parseFloat(Common.Utils.Metric.fnRecalcFromMM(options.value[1]).toFixed(2)) %> x </span>' +
-                        '<span dir="ltr"><%= Common.Utils.Metric.getCurrentMetricName() %> </span><span dir="ltr"><%= parseFloat(Common.Utils.Metric.fnRecalcFromMM(options.value[0]).toFixed(2)) %></span></div></a>');
+                            '<div dir="ltr"><span dir="ltr"><%= Common.Utils.Metric.getCurrentMetricName() %> </span><span dir="ltr"><%= parseFloat(Common.Utils.Metric.fnRecalcFromMM(options.value[1]).toFixed(2)) %> x </span>' +
+                            '<span dir="ltr"><%= Common.Utils.Metric.getCurrentMetricName() %> </span><span dir="ltr"><%= parseFloat(Common.Utils.Metric.fnRecalcFromMM(options.value[0]).toFixed(2)) %></span></div></a>');
 
                     this.btnPageSize = new Common.UI.Button({
                         id: 'tlbtn-pagesize',
@@ -1419,8 +1612,8 @@ define([
                                     toggleGroup: 'menuPageSize',
                                     value: [305, 487]
                                 },
-                                {caption: '--'},
-                                {caption: this.textPageSizeCustom, value: 'advanced'}
+                                { caption: '--' },
+                                { caption: this.textPageSizeCustom, value: 'advanced' }
                             ]
                         }),
                         action: 'page-size',
@@ -1469,7 +1662,7 @@ define([
                                     allowDepress: true,
                                     value: 4
                                 },
-                                {caption: '--'},
+                                { caption: '--' },
                                 {
                                     caption: this.textCustomLineNumbers,
                                     value: 5
@@ -1504,7 +1697,7 @@ define([
                                     toggleGroup: 'menuHyphenation',
                                     value: 1
                                 },
-                                {caption: '--'},
+                                { caption: '--' },
                                 {
                                     caption: this.textCustomHyphen,
                                     value: 'custom'
@@ -1523,7 +1716,7 @@ define([
                         cls: 'btn-toolbar',
                         iconCls: 'toolbar__icon btn-clearstyle',
                         lock: [_set.paragraphLock, _set.headerLock, _set.richEditLock, _set.plainEditLock, _set.inChart, _set.inSmartart, _set.inSmartartInternal, _set.previewReviewMode, _set.viewFormMode,
-                            _set.lostConnect, _set.disableOnStart, _set.docLockViewText, _set.docLockForms, _set.docLockCommentsText, _set.viewMode],
+                        _set.lostConnect, _set.disableOnStart, _set.docLockViewText, _set.docLockForms, _set.docLockCommentsText, _set.viewMode],
                         dataHint: '1',
                         dataHintDirection: 'bottom'
                     });
@@ -1533,7 +1726,7 @@ define([
                         id: 'id-toolbar-btn-copystyle',
                         cls: 'btn-toolbar',
                         iconCls: 'toolbar__icon btn-copystyle',
-                        lock: [ _set.previewReviewMode, _set.viewFormMode, _set.lostConnect, _set.disableOnStart, _set.docLockForms, _set.viewMode],
+                        lock: [_set.previewReviewMode, _set.viewFormMode, _set.lostConnect, _set.disableOnStart, _set.docLockForms, _set.viewMode],
                         enableToggle: true,
                         dataHint: '1',
                         dataHintDirection: 'bottom'
@@ -1668,7 +1861,7 @@ define([
                                 style: Common.UI.isRTL() ? 'padding-right:20px;' : 'padding-left:20px;',
                                 checkable: true
                             }),
-                            {caption: '--'}
+                            { caption: '--' }
                         ],
                         dataHint: '1',
                         dataHintDirection: 'bottom',
@@ -1724,21 +1917,21 @@ define([
                     this.listStyles = new Common.UI.ComboDataView({
                         cls: 'combo-styles',
                         lock: [_set.noStyles, _set.paragraphLock, _set.headerLock, _set.richEditLock, _set.plainEditLock, _set.inChart, _set.inSmartart, _set.inSmartartInternal, _set.previewReviewMode,
-                            _set.viewFormMode, _set.lostConnect, _set.disableOnStart, _set.docLockViewText, _set.docLockForms, _set.docLockCommentsText, _set.viewMode],
+                        _set.viewFormMode, _set.lostConnect, _set.disableOnStart, _set.docLockViewText, _set.docLockForms, _set.docLockCommentsText, _set.viewMode],
                         itemWidth: itemWidth,
                         itemHeight: itemHeight,
                         style: 'min-width:139px;',
-//                hint        : this.tipParagraphStyle,
+                        //                hint        : this.tipParagraphStyle,
                         dataHint: '1',
                         dataHintDirection: 'bottom',
                         dataHintOffset: '-16, -4',
                         enableKeyEvents: true,
                         additionalMenuItems: [this.listStylesAdditionalMenuItem],
                         delayRenderTips: true,
-                        autoWidth:       true,
+                        autoWidth: true,
                         itemTemplate: _.template([
                             '<div class="style" id="<%= id %>">',
-                                '<div style="background-image: url(<%= imageUrl %>); width: ' + itemWidth + 'px; height: ' + itemHeight + 'px;"></div>',
+                            '<div style="background-image: url(<%= imageUrl %>); width: ' + itemWidth + 'px; height: ' + itemHeight + 'px;"></div>',
                             '</div>'
                         ].join('')),
                         beforeOpenHandler: function (e) {
@@ -1765,9 +1958,9 @@ define([
                                     buttonOffsetLeft = Common.Utils.getOffset(cmp.openButton.$el).left;
                                 // if (menuWidth>buttonOffsetLeft)
                                 //     menuWidth = Math.max(Math.floor(buttonOffsetLeft/(itemMargin + _width)), 2) * (itemMargin + _width);
-                                if (menuWidth>Common.Utils.innerWidth())
-                                    menuWidth = Math.max(Math.floor(Common.Utils.innerWidth()/(itemMargin + _width)), 2) * (itemMargin + _width);
-                                menuWidth = Math.ceil(menuWidth * 10)/10;
+                                if (menuWidth > Common.Utils.innerWidth())
+                                    menuWidth = Math.max(Math.floor(Common.Utils.innerWidth() / (itemMargin + _width)), 2) * (itemMargin + _width);
+                                menuWidth = Math.ceil(menuWidth * 10) / 10;
                                 var offset = cmp.cmpEl.width() - cmp.openButton.$el.width() - Math.min(menuWidth, buttonOffsetLeft);
                                 if (Common.UI.isRTL()) {
                                     offset = cmp.openButton.$el.width();
@@ -1793,12 +1986,12 @@ define([
 
                     this.paragraphControls.push(this.listStyles);
                     this.textOnlyControls.push(this.listStyles);
-                    this.lockToolbar(Common.enumLock.noStyles, !window.styles_loaded, {array: [this.listStyles]})
+                    this.lockToolbar(Common.enumLock.noStyles, !window.styles_loaded, { array: [this.listStyles] })
 
                     // Disable all components before load document
                     this.lockControls = me.toolbarControls.concat(me.paragraphControls);
                     Common.UI.LayoutManager.addControls(this.lockControls);
-                    this.lockToolbar(Common.enumLock.disableOnStart, true, {array: this.lockControls});
+                    this.lockToolbar(Common.enumLock.disableOnStart, true, { array: this.lockControls });
 
                     var editStyleMenuUpdate = new Common.UI.MenuItem({
                         caption: me.textStyleMenuUpdate
@@ -1834,12 +2027,12 @@ define([
                     this.on('render:after', _.bind(this.onToolbarAfterRender, this));
                 } else {
                     Common.UI.Mixtbar.prototype.initialize.call(this, {
-                            template: _.template(template_view),
-                            tabs: [
-                                {caption: me.textTabFile, action: 'file', layoutname: 'toolbar-file', haspanel: false, dataHintTitle: 'F'}
-                            ],
-                            config: config
-                        }
+                        template: _.template(template_view),
+                        tabs: [
+                            { caption: me.textTabFile, action: 'file', layoutname: 'toolbar-file', haspanel: false, dataHintTitle: 'F' }
+                        ],
+                        config: config
+                    }
                     );
                     if (config.isRestrictedEdit && config.canFillForms && config.isPDFForm) {
                         this.btnSaveCls = config.canSaveToFile || config.isDesktopApp && config.isOffline ? 'btn-save' : 'btn-download';
@@ -1984,7 +2177,7 @@ define([
 
                         this.lockControls = this.toolbarControls.concat(this.paragraphControls);
                         Common.UI.LayoutManager.addControls(this.lockControls);
-                        this.lockToolbar(Common.enumLock.disableOnStart, true, {array: this.lockControls});
+                        this.lockToolbar(Common.enumLock.disableOnStart, true, { array: this.lockControls });
                     }
                 }
                 return this;
@@ -2000,7 +2193,7 @@ define([
                 this.fireEvent('render:before', [this]);
 
                 me.isCompactView = mode.isCompactView;
-                if ( mode.isEdit ) {
+                if (mode.isEdit) {
                     me.$el.html(me.rendererComponents(me.$layout));
                 } else if (mode.isRestrictedEdit && mode.canFillForms && mode.isPDFForm) {
                     me.$el.html(me.rendererComponentsRestrictedEditForms(me.$layout));
@@ -2014,12 +2207,12 @@ define([
                 Common.UI.Mixtbar.prototype.afterRender.call(this);
 
                 Common.NotificationCenter.on({
-                    'window:resize': function() {
+                    'window:resize': function () {
                         Common.UI.Mixtbar.prototype.onResize.apply(me, arguments);
                     }
                 });
 
-                if ( mode.isEdit ) {
+                if (mode.isEdit) {
                     /** coauthoring begin **/
                     this.showSynchTip = !Common.localStorage.getBool("de-hide-synch");
                     this.needShowSynchTip = false;
@@ -2032,7 +2225,7 @@ define([
                     Common.NotificationCenter.on('desktop:window', _.bind(me.onDesktopWindow, me));
                 }
 
-                if ( me.isCompactView )
+                if (me.isCompactView)
                     me.setFolded(true);
 
                 return this;
@@ -2047,19 +2240,19 @@ define([
 
                 Common.UI.Mixtbar.prototype.onTabClick.apply(me, arguments);
 
-                if ( is_file_active ) {
+                if (is_file_active) {
                     me.fireEvent('file:close');
                 } else
-                if ( tab == 'file' ) {
-                    me.fireEvent('file:open');
-                    me.setTab(tab);
-                }
+                    if (tab == 'file') {
+                        me.fireEvent('file:open');
+                        me.setTab(tab);
+                    }
 
-                if ( me.isTabActive('home'))
+                if (me.isTabActive('home'))
                     me.fireEvent('home:open');
             },
 
-            rendererComponentsRestrictedEditForms: function(html) {
+            rendererComponentsRestrictedEditForms: function (html) {
                 var $host = $(html);
                 var _injectComponent = function (id, cmp) {
                     Common.Utils.injectComponent($host.findById(id), cmp);
@@ -2146,7 +2339,7 @@ define([
                 _injectComponent('#slot-btn-paracolor', this.btnParagraphColor);
                 _injectComponent('#slot-field-styles', this.listStyles);
                 _injectComponent('#slot-img-align', this.btnImgAlign);
-                _injectComponent('#slot-img-group', this.btnImgGroup); 
+                _injectComponent('#slot-img-group', this.btnImgGroup);
                 _injectComponent('#slot-img-movefrwd', this.btnImgForward);
                 _injectComponent('#slot-img-movebkwd', this.btnImgBackward);
                 _injectComponent('#slot-img-wrapping', this.btnImgWrapping);
@@ -2165,9 +2358,9 @@ define([
 
                 this.btnsPageBreak = Common.Utils.injectButtons($host.find('.btn-slot.btn-pagebreak'), '', 'toolbar__icon btn-pagebreak', this.capBtnInsPagebreak,
                     [Common.enumLock.paragraphLock, Common.enumLock.headerLock, Common.enumLock.richEditLock, Common.enumLock.plainEditLock, Common.enumLock.inEquation, Common.enumLock.richDelLock,
-                        Common.enumLock.plainDelLock, Common.enumLock.inHeader, Common.enumLock.inFootnote, Common.enumLock.inControl, Common.enumLock.cantPageBreak, Common.enumLock.previewReviewMode,
-                        Common.enumLock.viewFormMode, Common.enumLock.lostConnect, Common.enumLock.disableOnStart, Common.enumLock.docLockViewIns, Common.enumLock.docLockForms, Common.enumLock.docLockCommentsIns, Common.enumLock.viewMode],
-                        true, true, undefined, '1', 'bottom', 'small', undefined, 'page-break');
+                    Common.enumLock.plainDelLock, Common.enumLock.inHeader, Common.enumLock.inFootnote, Common.enumLock.inControl, Common.enumLock.cantPageBreak, Common.enumLock.previewReviewMode,
+                    Common.enumLock.viewFormMode, Common.enumLock.lostConnect, Common.enumLock.disableOnStart, Common.enumLock.docLockViewIns, Common.enumLock.docLockForms, Common.enumLock.docLockCommentsIns, Common.enumLock.viewMode],
+                    true, true, undefined, '1', 'bottom', 'small', undefined, 'page-break');
                 Array.prototype.push.apply(this.paragraphControls, this.btnsPageBreak);
                 Array.prototype.push.apply(this.lockControls, this.btnsPageBreak);
                 Common.UI.LayoutManager.addControls(this.btnsPageBreak);
@@ -2182,114 +2375,114 @@ define([
                     var lang = config.lang ? config.lang.toLowerCase() : 'en',
                         langPrefix = lang.split(/[\-_]/)[0];
                     var fontSizeData = (langPrefix === 'zh' && lang !== 'zh-tw' && lang !== 'zh_tw') ? [
-                        {value: '42_str', displayValue: "初号"},
-                        {value: '36_str', displayValue: "小初"},
-                        {value: '26_str', displayValue: "一号"},
-                        {value: '24_str', displayValue: "小一"},
-                        {value: '22_str', displayValue: "二号"},
-                        {value: '18_str', displayValue: "小二"},
-                        {value: '16_str', displayValue: "三号"},
-                        {value: '15_str', displayValue: "小三"},
-                        {value: '14_str', displayValue: "四号"},
-                        {value: '12_str', displayValue: "小四"},
-                        {value: '10.5_str', displayValue: "五号"},
-                        {value: '9_str', displayValue: "小五"},
-                        {value: '7.5_str', displayValue: "六号"},
-                        {value: '6.5_str', displayValue: "小六"},
-                        {value: '5.5_str', displayValue: "七号"},
-                        {value: '5_str', displayValue: "八号"},
-                        {value: 5, displayValue: "5"},
-                        {value: 5.5, displayValue: "5.5"},
-                        {value: 6.5, displayValue: "6.5"},
-                        {value: 7.5, displayValue: "7.5"},
-                        {value: 8, displayValue: "8"},
-                        {value: 9, displayValue: "9"},
-                        {value: 10, displayValue: "10"},
-                        {value: 10.5, displayValue: "10.5"},
-                        {value: 11, displayValue: "11"},
-                        {value: 12, displayValue: "12"},
-                        {value: 14, displayValue: "14"},
-                        {value: 15, displayValue: "15"},
-                        {value: 16, displayValue: "16"},
-                        {value: 18, displayValue: "18"},
-                        {value: 20, displayValue: "20"},
-                        {value: 22, displayValue: "22"},
-                        {value: 24, displayValue: "24"},
-                        {value: 26, displayValue: "26"},
-                        {value: 28, displayValue: "28"},
-                        {value: 36, displayValue: "36"},
-                        {value: 42, displayValue: "42"},
-                        {value: 48, displayValue: "48"},
-                        {value: 72, displayValue: "72"},
-                        {value: 96, displayValue: "96"}
+                        { value: '42_str', displayValue: "初号" },
+                        { value: '36_str', displayValue: "小初" },
+                        { value: '26_str', displayValue: "一号" },
+                        { value: '24_str', displayValue: "小一" },
+                        { value: '22_str', displayValue: "二号" },
+                        { value: '18_str', displayValue: "小二" },
+                        { value: '16_str', displayValue: "三号" },
+                        { value: '15_str', displayValue: "小三" },
+                        { value: '14_str', displayValue: "四号" },
+                        { value: '12_str', displayValue: "小四" },
+                        { value: '10.5_str', displayValue: "五号" },
+                        { value: '9_str', displayValue: "小五" },
+                        { value: '7.5_str', displayValue: "六号" },
+                        { value: '6.5_str', displayValue: "小六" },
+                        { value: '5.5_str', displayValue: "七号" },
+                        { value: '5_str', displayValue: "八号" },
+                        { value: 5, displayValue: "5" },
+                        { value: 5.5, displayValue: "5.5" },
+                        { value: 6.5, displayValue: "6.5" },
+                        { value: 7.5, displayValue: "7.5" },
+                        { value: 8, displayValue: "8" },
+                        { value: 9, displayValue: "9" },
+                        { value: 10, displayValue: "10" },
+                        { value: 10.5, displayValue: "10.5" },
+                        { value: 11, displayValue: "11" },
+                        { value: 12, displayValue: "12" },
+                        { value: 14, displayValue: "14" },
+                        { value: 15, displayValue: "15" },
+                        { value: 16, displayValue: "16" },
+                        { value: 18, displayValue: "18" },
+                        { value: 20, displayValue: "20" },
+                        { value: 22, displayValue: "22" },
+                        { value: 24, displayValue: "24" },
+                        { value: 26, displayValue: "26" },
+                        { value: 28, displayValue: "28" },
+                        { value: 36, displayValue: "36" },
+                        { value: 42, displayValue: "42" },
+                        { value: 48, displayValue: "48" },
+                        { value: 72, displayValue: "72" },
+                        { value: 96, displayValue: "96" }
                     ] : [
-                        {value: 8, displayValue: "8"},
-                        {value: 9, displayValue: "9"},
-                        {value: 10, displayValue: "10"},
-                        {value: 11, displayValue: "11"},
-                        {value: 12, displayValue: "12"},
-                        {value: 14, displayValue: "14"},
-                        {value: 16, displayValue: "16"},
-                        {value: 18, displayValue: "18"},
-                        {value: 20, displayValue: "20"},
-                        {value: 22, displayValue: "22"},
-                        {value: 24, displayValue: "24"},
-                        {value: 26, displayValue: "26"},
-                        {value: 28, displayValue: "28"},
-                        {value: 36, displayValue: "36"},
-                        {value: 48, displayValue: "48"},
-                        {value: 72, displayValue: "72"},
-                        {value: 96, displayValue: "96"}
+                        { value: 8, displayValue: "8" },
+                        { value: 9, displayValue: "9" },
+                        { value: 10, displayValue: "10" },
+                        { value: 11, displayValue: "11" },
+                        { value: 12, displayValue: "12" },
+                        { value: 14, displayValue: "14" },
+                        { value: 16, displayValue: "16" },
+                        { value: 18, displayValue: "18" },
+                        { value: 20, displayValue: "20" },
+                        { value: 22, displayValue: "22" },
+                        { value: 24, displayValue: "24" },
+                        { value: 26, displayValue: "26" },
+                        { value: 28, displayValue: "28" },
+                        { value: 36, displayValue: "36" },
+                        { value: 48, displayValue: "48" },
+                        { value: 72, displayValue: "72" },
+                        { value: 96, displayValue: "96" }
                     ];
                     me.cmbFontSize.setData(fontSizeData);
                 }
-                (new Promise( function(resolve, reject) {
+                (new Promise(function (resolve, reject) {
                     resolve();
                 })).then(function () {
-                    if(me.btnPrint && me.btnPrint.menu){
+                    if (me.btnPrint && me.btnPrint.menu) {
                         me.btnPrint.setMenu(
                             new Common.UI.Menu({
-                                items:[
+                                items: [
                                     {
-                                        caption:            me.tipPrint,
-                                        iconCls:            'menu__icon btn-print',
-                                        toggleGroup:        'viewPrint',
-                                        value:              'print',
-                                        iconClsForMainBtn:  'btn-print',
-                                        platformKey:         Common.Utils.String.platformKey('Ctrl+P')
+                                        caption: me.tipPrint,
+                                        iconCls: 'menu__icon btn-print',
+                                        toggleGroup: 'viewPrint',
+                                        value: 'print',
+                                        iconClsForMainBtn: 'btn-print',
+                                        platformKey: Common.Utils.String.platformKey('Ctrl+P')
                                     },
                                     {
-                                        caption:            me.tipPrintQuick,
-                                        iconCls:            'menu__icon btn-quick-print',
-                                        toggleGroup:        'viewPrint',
-                                        value:              'print-quick',
-                                        iconClsForMainBtn:  'btn-quick-print',
-                                        platformKey:        ''
+                                        caption: me.tipPrintQuick,
+                                        iconCls: 'menu__icon btn-quick-print',
+                                        toggleGroup: 'viewPrint',
+                                        value: 'print-quick',
+                                        iconClsForMainBtn: 'btn-quick-print',
+                                        platformKey: ''
                                     }
                                 ]
                             }));
                     }
 
-                    if ( !config.isEdit ) return;
+                    if (!config.isEdit) return;
 
-                    me.btnsPageBreak.forEach( function(btn) {
-                        btn.updateHint( [me.textInsPageBreak, me.tipPageBreak] );
+                    me.btnsPageBreak.forEach(function (btn) {
+                        btn.updateHint([me.textInsPageBreak, me.tipPageBreak]);
 
                         var _menu_section_break = new Common.UI.Menu({
                             menuAlign: 'tl-tr',
                             items: [
-                                {caption: me.textNextPage, value: Asc.c_oAscSectionBreakType.NextPage},
-                                {caption: me.textContPage, value: Asc.c_oAscSectionBreakType.Continuous},
-                                {caption: me.textEvenPage, value: Asc.c_oAscSectionBreakType.EvenPage},
-                                {caption: me.textOddPage, value: Asc.c_oAscSectionBreakType.OddPage}
+                                { caption: me.textNextPage, value: Asc.c_oAscSectionBreakType.NextPage },
+                                { caption: me.textContPage, value: Asc.c_oAscSectionBreakType.Continuous },
+                                { caption: me.textEvenPage, value: Asc.c_oAscSectionBreakType.EvenPage },
+                                { caption: me.textOddPage, value: Asc.c_oAscSectionBreakType.OddPage }
                             ]
                         });
 
                         var _menu = new Common.UI.Menu({
                             items: [
-                                {caption: me.textInsPageBreak, value: 'page'},
-                                {caption: me.textInsColumnBreak, value: 'column'},
-                                {caption: me.textInsSectionBreak, value: 'section', menu: _menu_section_break}
+                                { caption: me.textInsPageBreak, value: 'page' },
+                                { caption: me.textInsColumnBreak, value: 'column' },
+                                { caption: me.textInsSectionBreak, value: 'section', menu: _menu_section_break }
                             ]
                         });
 
@@ -2300,28 +2493,29 @@ define([
                     me.btnImgForward.updateHint(me.tipSendForward);
                     me.btnImgForward.setMenu(new Common.UI.Menu({
                         items: [{
-                                caption : _holder_view.textArrangeFront,
-                                iconCls : 'menu__icon btn-arrange-front',
-                                valign  : Asc.c_oAscChangeLevel.BringToFront
-                            }, {
-                                caption : _holder_view.textArrangeForward,
-                                iconCls : 'menu__icon btn-arrange-forward',
-                                valign  : Asc.c_oAscChangeLevel.BringForward
-                            }
-                        ]})
+                            caption: _holder_view.textArrangeFront,
+                            iconCls: 'menu__icon btn-arrange-front',
+                            valign: Asc.c_oAscChangeLevel.BringToFront
+                        }, {
+                            caption: _holder_view.textArrangeForward,
+                            iconCls: 'menu__icon btn-arrange-forward',
+                            valign: Asc.c_oAscChangeLevel.BringForward
+                        }
+                        ]
+                    })
                     );
 
                     me.btnImgBackward.updateHint(me.tipSendBackward);
                     me.btnImgBackward.setMenu(new Common.UI.Menu({
                         items: [{
-                                caption : _holder_view.textArrangeBack,
-                                iconCls : 'menu__icon btn-arrange-back',
-                                valign  : Asc.c_oAscChangeLevel.SendToBack
-                            }, {
-                                caption : _holder_view.textArrangeBackward,
-                                iconCls : 'menu__icon btn-arrange-backward',
-                                valign  : Asc.c_oAscChangeLevel.BringBackward
-                            }]
+                            caption: _holder_view.textArrangeBack,
+                            iconCls: 'menu__icon btn-arrange-back',
+                            valign: Asc.c_oAscChangeLevel.SendToBack
+                        }, {
+                            caption: _holder_view.textArrangeBackward,
+                            iconCls: 'menu__icon btn-arrange-backward',
+                            valign: Asc.c_oAscChangeLevel.BringBackward
+                        }]
                     }));
 
                     me.btnImgAlign.updateHint(me.tipImgAlign);
@@ -2365,37 +2559,37 @@ define([
                     me.btnImgAlign.setMenu(new Common.UI.Menu({
                         cls: 'shifted-right',
                         items: [{
-                                caption : _holder_view.textShapeAlignLeft,
-                                iconCls : 'menu__icon btn-shape-align-left',
-                                value: Asc.c_oAscAlignShapeType.ALIGN_LEFT
-                            }, {
-                                caption : _holder_view.textShapeAlignCenter,
-                                iconCls : 'menu__icon btn-shape-align-center',
-                                value: Asc.c_oAscAlignShapeType.ALIGN_CENTER
-                            }, {
-                                caption : _holder_view.textShapeAlignRight,
-                                iconCls : 'menu__icon btn-shape-align-right',
-                                value: Asc.c_oAscAlignShapeType.ALIGN_RIGHT
-                            }, {
-                                caption : _holder_view.textShapeAlignTop,
-                                iconCls : 'menu__icon btn-shape-align-top',
-                                value: Asc.c_oAscAlignShapeType.ALIGN_TOP
-                            }, {
-                                caption : _holder_view.textShapeAlignMiddle,
-                                iconCls : 'menu__icon btn-shape-align-middle',
-                                value: Asc.c_oAscAlignShapeType.ALIGN_MIDDLE
-                            }, {
-                                caption : _holder_view.textShapeAlignBottom,
-                                iconCls : 'menu__icon btn-shape-align-bottom',
-                                value: Asc.c_oAscAlignShapeType.ALIGN_BOTTOM
-                            },
-                            {caption: '--'},
-                            me.mniDistribHor,
-                            me.mniDistribVert,
-                            {caption: '--'},
-                            me.mniAlignToPage,
-                            me.mniAlignToMargin,
-                            me.mniAlignObjects
+                            caption: _holder_view.textShapeAlignLeft,
+                            iconCls: 'menu__icon btn-shape-align-left',
+                            value: Asc.c_oAscAlignShapeType.ALIGN_LEFT
+                        }, {
+                            caption: _holder_view.textShapeAlignCenter,
+                            iconCls: 'menu__icon btn-shape-align-center',
+                            value: Asc.c_oAscAlignShapeType.ALIGN_CENTER
+                        }, {
+                            caption: _holder_view.textShapeAlignRight,
+                            iconCls: 'menu__icon btn-shape-align-right',
+                            value: Asc.c_oAscAlignShapeType.ALIGN_RIGHT
+                        }, {
+                            caption: _holder_view.textShapeAlignTop,
+                            iconCls: 'menu__icon btn-shape-align-top',
+                            value: Asc.c_oAscAlignShapeType.ALIGN_TOP
+                        }, {
+                            caption: _holder_view.textShapeAlignMiddle,
+                            iconCls: 'menu__icon btn-shape-align-middle',
+                            value: Asc.c_oAscAlignShapeType.ALIGN_MIDDLE
+                        }, {
+                            caption: _holder_view.textShapeAlignBottom,
+                            iconCls: 'menu__icon btn-shape-align-bottom',
+                            value: Asc.c_oAscAlignShapeType.ALIGN_BOTTOM
+                        },
+                        { caption: '--' },
+                        me.mniDistribHor,
+                        me.mniDistribVert,
+                        { caption: '--' },
+                        me.mniAlignToPage,
+                        me.mniAlignToMargin,
+                        me.mniAlignObjects
                         ]
                     }));
 
@@ -2404,27 +2598,27 @@ define([
                         cls: 'shifted-right',
                         items: [
                             {
-                                caption: me.textShapesUnion, 
+                                caption: me.textShapesUnion,
                                 iconCls: 'menu__icon btn-union-shapes',
                                 value: 'unite',
                             },
                             {
-                                caption: me.textShapesCombine, 
+                                caption: me.textShapesCombine,
                                 iconCls: 'menu__icon btn-combine-shapes',
                                 value: 'exclude',
                             },
                             {
-                                caption: me.textShapesFragment, 
+                                caption: me.textShapesFragment,
                                 iconCls: 'menu__icon btn-fragment-shapes',
                                 value: 'divide',
                             },
                             {
-                                caption: me.textShapesIntersect, 
+                                caption: me.textShapesIntersect,
                                 iconCls: 'menu__icon btn-intersect-shapes',
                                 value: 'intersect',
                             },
                             {
-                                caption: me.textShapesSubstract, 
+                                caption: me.textShapesSubstract,
                                 iconCls: 'menu__icon btn-substract-shapes',
                                 value: 'subtract',
                             },
@@ -2434,12 +2628,12 @@ define([
                     me.btnImgGroup.updateHint(me.tipImgGroup);
                     me.btnImgGroup.setMenu(new Common.UI.Menu({
                         items: [{
-                            caption : _holder_view.txtGroup,
-                            iconCls : 'menu__icon btn-shape-group',
+                            caption: _holder_view.txtGroup,
+                            iconCls: 'menu__icon btn-shape-group',
                             groupval: 1
                         }, {
-                            caption : _holder_view.txtUngroup,
-                            iconCls : 'menu__icon btn-shape-ungroup',
+                            caption: _holder_view.txtUngroup,
+                            iconCls: 'menu__icon btn-shape-ungroup',
                             groupval: -1
                         }]
                     }));
@@ -2448,64 +2642,64 @@ define([
                     me.btnImgWrapping.setMenu(new Common.UI.Menu({
                         cls: 'ppm-toolbar shifted-right',
                         items: [{
-                                caption     : _holder_view.txtInline,
-                                iconCls     : 'menu__icon btn-small-wrap-inline',
-                                toggleGroup : 'imgwrapping',
-                                wrapType    : Asc.c_oAscWrapStyle2.Inline,
-                                checkmark   : false,
-                                checkable   : true
-                            },
-                            { caption: '--' },
-                            {
-                                caption     : _holder_view.txtSquare,
-                                iconCls     : 'menu__icon btn-small-wrap-square',
-                                toggleGroup : 'imgwrapping',
-                                wrapType    : Asc.c_oAscWrapStyle2.Square,
-                                checkmark   : false,
-                                checkable   : true
-                            }, {
-                                caption     : _holder_view.txtTight,
-                                iconCls     : 'menu__icon btn-small-wrap-tight',
-                                toggleGroup : 'imgwrapping',
-                                wrapType    : Asc.c_oAscWrapStyle2.Tight,
-                                checkmark   : false,
-                                checkable   : true
-                            }, {
-                                caption     : _holder_view.txtThrough,
-                                iconCls     : 'menu__icon btn-small-wrap-through',
-                                toggleGroup : 'imgwrapping',
-                                wrapType    : Asc.c_oAscWrapStyle2.Through,
-                                checkmark   : false,
-                                checkable   : true
-                            }, {
-                                caption     : _holder_view.txtTopAndBottom,
-                                iconCls     : 'menu__icon btn-small-wrap-topandbottom',
-                                toggleGroup : 'imgwrapping',
-                                wrapType    : Asc.c_oAscWrapStyle2.TopAndBottom,
-                                checkmark   : false,
-                                checkable   : true
-                            },
-                            { caption: '--' },
-                            {
-                                caption     : _holder_view.txtInFront,
-                                iconCls     : 'menu__icon btn-small-wrap-infront',
-                                toggleGroup : 'imgwrapping',
-                                wrapType    : Asc.c_oAscWrapStyle2.InFront,
-                                checkmark   : false,
-                                checkable   : true
-                            }, {
-                                caption     : _holder_view.txtBehind,
-                                iconCls     : 'menu__icon btn-small-wrap-behind',
-                                toggleGroup : 'imgwrapping',
-                                wrapType    : Asc.c_oAscWrapStyle2.Behind,
-                                checkmark   : false,
-                                checkable   : true
-                            },
-                            { caption: '--' },
-                            {
-                                caption     : _holder_view.textEditWrapBoundary,
-                                wrapType    : 'edit'
-                            }
+                            caption: _holder_view.txtInline,
+                            iconCls: 'menu__icon btn-small-wrap-inline',
+                            toggleGroup: 'imgwrapping',
+                            wrapType: Asc.c_oAscWrapStyle2.Inline,
+                            checkmark: false,
+                            checkable: true
+                        },
+                        { caption: '--' },
+                        {
+                            caption: _holder_view.txtSquare,
+                            iconCls: 'menu__icon btn-small-wrap-square',
+                            toggleGroup: 'imgwrapping',
+                            wrapType: Asc.c_oAscWrapStyle2.Square,
+                            checkmark: false,
+                            checkable: true
+                        }, {
+                            caption: _holder_view.txtTight,
+                            iconCls: 'menu__icon btn-small-wrap-tight',
+                            toggleGroup: 'imgwrapping',
+                            wrapType: Asc.c_oAscWrapStyle2.Tight,
+                            checkmark: false,
+                            checkable: true
+                        }, {
+                            caption: _holder_view.txtThrough,
+                            iconCls: 'menu__icon btn-small-wrap-through',
+                            toggleGroup: 'imgwrapping',
+                            wrapType: Asc.c_oAscWrapStyle2.Through,
+                            checkmark: false,
+                            checkable: true
+                        }, {
+                            caption: _holder_view.txtTopAndBottom,
+                            iconCls: 'menu__icon btn-small-wrap-topandbottom',
+                            toggleGroup: 'imgwrapping',
+                            wrapType: Asc.c_oAscWrapStyle2.TopAndBottom,
+                            checkmark: false,
+                            checkable: true
+                        },
+                        { caption: '--' },
+                        {
+                            caption: _holder_view.txtInFront,
+                            iconCls: 'menu__icon btn-small-wrap-infront',
+                            toggleGroup: 'imgwrapping',
+                            wrapType: Asc.c_oAscWrapStyle2.InFront,
+                            checkmark: false,
+                            checkable: true
+                        }, {
+                            caption: _holder_view.txtBehind,
+                            iconCls: 'menu__icon btn-small-wrap-behind',
+                            toggleGroup: 'imgwrapping',
+                            wrapType: Asc.c_oAscWrapStyle2.Behind,
+                            checkmark: false,
+                            checkable: true
+                        },
+                        { caption: '--' },
+                        {
+                            caption: _holder_view.textEditWrapBoundary,
+                            wrapType: 'edit'
+                        }
                         ]
                     }));
 
@@ -2518,7 +2712,7 @@ define([
                             { caption: me.mniTextFromStorage, value: 'storage' }
                         ]
                     }));
-                    me.btnTextFromFile.menu.items[2].setVisible(config.canRequestSelectDocument || config.fileChoiceUrl && config.fileChoiceUrl.indexOf("{documentType}")>-1);
+                    me.btnTextFromFile.menu.items[2].setVisible(config.canRequestSelectDocument || config.fileChoiceUrl && config.fileChoiceUrl.indexOf("{documentType}") > -1);
                     me.btnTextFromFile.menu.items[1].setDisabled(config.disableNetworkFunctionality);
                     me.btnTextFromFile.menu.items[2].setDisabled(config.disableNetworkFunctionality);
                     me.btnTextFromFile.updateHint(me.tipTextFromFile);
@@ -2529,7 +2723,7 @@ define([
                 });
             },
 
-            createDelayedElementsRestrictedEditForms: function() {
+            createDelayedElementsRestrictedEditForms: function () {
                 if (!this.mode.isRestrictedEdit || !this.mode.canFillForms || !this.mode.isPDFForm) return;
 
                 this.btnPrint.updateHint(this.tipPrint + Common.Utils.String.platformKey('Ctrl+P'));
@@ -2591,7 +2785,7 @@ define([
                 this.btnInsertTable.updateHint(this.tipInsertTable);
                 this.btnInsertImage.updateHint(this.tipInsertImage);
                 this.btnInsertChart.updateHint(this.tipInsertChart);
-                this.btnInsertText.updateHint([this.tipInsertHorizontalText ,this.tipInsertText]);
+                this.btnInsertText.updateHint([this.tipInsertHorizontalText, this.tipInsertText]);
                 this.btnInsertTextArt.updateHint(this.tipInsertTextArt);
                 this.btnEditHeader.updateHint(this.tipEditHeader);
                 this.btnInsDateTime.updateHint(this.tipDateTime);
@@ -2620,9 +2814,9 @@ define([
                 var me = this;
                 var levelTemplate = _.template('<a id="<%= id %>" tabindex="-1" type="menuitem"><div id="<%= options.previewId %>" class="menu-list-preview" style="width: 200px; height: 30px;"></div></a>');
                 var items = [], ids = [];
-                for (var i=0; i<9; i++) {
+                for (var i = 0; i < 9; i++) {
                     ids.push('id-toolbar-menu-markers-level-' + i);
-                    items.push({template: levelTemplate, previewId: ids[i], level: i, checkable: true });
+                    items.push({ template: levelTemplate, previewId: ids[i], level: i, checkable: true });
                 }
 
                 this.btnMarkers.setMenu(
@@ -2630,12 +2824,12 @@ define([
                         cls: 'shifted-left',
                         style: 'min-width: 145px',
                         items: [
-                            {template: _.template('<div id="id-toolbar-menu-markers" class="menu-markers" style="width: 153px;"></div>')},
-                            {caption: '--'},
+                            { template: _.template('<div id="id-toolbar-menu-markers" class="menu-markers" style="width: 153px;"></div>') },
+                            { caption: '--' },
                             this.mnuMarkerChangeLevel = new Common.UI.MenuItem({
                                 cls: 'list-level',
                                 caption: this.textChangeLevel,
-                                disabled: (this.mnuMarkersPicker.conf.index || 0)==0,
+                                disabled: (this.mnuMarkersPicker.conf.index || 0) == 0,
                                 menu: new Common.UI.Menu({
                                     cls: 'list-settings-level',
                                     menuAlign: 'tl-tr',
@@ -2652,20 +2846,20 @@ define([
                 );
 
                 items = []; ids = [];
-                for (var i=0; i<9; i++) {
+                for (var i = 0; i < 9; i++) {
                     ids.push('id-toolbar-menu-numbering-level-' + i);
-                    items.push({template: levelTemplate, previewId: ids[i], level: i, checkable: true });
+                    items.push({ template: levelTemplate, previewId: ids[i], level: i, checkable: true });
                 }
                 this.btnNumbers.setMenu(
                     new Common.UI.Menu({
                         cls: 'shifted-left',
                         items: [
-                            {template: _.template('<div id="id-toolbar-menu-numbering" class="menu-markers" style="width: 361px;"></div>')},
-                            {caption: '--'},
+                            { template: _.template('<div id="id-toolbar-menu-numbering" class="menu-markers" style="width: 361px;"></div>') },
+                            { caption: '--' },
                             this.mnuNumberChangeLevel = new Common.UI.MenuItem({
                                 cls: 'list-level',
                                 caption: this.textChangeLevel,
-                                disabled: (this.mnuNumbersPicker.conf.index || 0)==0,
+                                disabled: (this.mnuNumbersPicker.conf.index || 0) == 0,
                                 menu: new Common.UI.Menu({
                                     cls: 'list-settings-level',
                                     menuAlign: 'tl-tr',
@@ -2681,21 +2875,21 @@ define([
                     })
                 );
                 items = []; ids = [];
-                for (var i=0; i<9; i++) {
+                for (var i = 0; i < 9; i++) {
                     ids.push('id-toolbar-menu-multilevels-level-' + i);
-                    items.push({template: levelTemplate, previewId: ids[i], level: i, checkable: true });
+                    items.push({ template: levelTemplate, previewId: ids[i], level: i, checkable: true });
                 }
                 this.btnMultilevels.setMenu(
                     new Common.UI.Menu({
                         cls: 'shifted-left',
                         style: 'min-width: 177px',
                         items: [
-                            {template: _.template('<div id="id-toolbar-menu-multilevels" class="menu-markers" style="width: 362px;"></div>')},
-                            {caption: '--'},
+                            { template: _.template('<div id="id-toolbar-menu-multilevels" class="menu-markers" style="width: 362px;"></div>') },
+                            { caption: '--' },
                             this.mnuMultiChangeLevel = new Common.UI.MenuItem({
                                 cls: 'list-level',
                                 caption: this.textChangeLevel,
-                                disabled: (this.mnuMultilevelPicker.conf.index || 0)==0,
+                                disabled: (this.mnuMultilevelPicker.conf.index || 0) == 0,
                                 menu: new Common.UI.Menu({
                                     cls: 'list-settings-level',
                                     menuAlign: 'tl-tr',
@@ -2717,12 +2911,12 @@ define([
                 this.btnEditHeader.setMenu(
                     new Common.UI.Menu({
                         items: [
-                            {caption: this.mniEditHeader, value: 'header'},
-                            {caption: this.mniEditFooter, value: 'footer'},
-                            {caption: '--'},
-                            {caption: this.mniRemoveHeader, value: 'header-remove'},
-                            {caption: this.mniRemoveFooter, value: 'footer-remove'},
-                            {caption: '--'},
+                            { caption: this.mniEditHeader, value: 'header' },
+                            { caption: this.mniEditFooter, value: 'footer' },
+                            { caption: '--' },
+                            { caption: this.mniRemoveHeader, value: 'header-remove' },
+                            { caption: this.mniRemoveFooter, value: 'footer-remove' },
+                            { caption: '--' },
                             this.mnuInsertPageNum = new Common.UI.MenuItem({
                                 caption: this.textInsertPageNumber,
                                 lock: this.mnuInsertPageNum.options.lock,
@@ -2732,7 +2926,7 @@ define([
                                     menuAlign: 'tl-tr',
                                     style: 'min-width: 90px;',
                                     items: [
-                                        {template: _.template('<div id="id-toolbar-menu-pageposition" class="menu-pageposition"></div>')},
+                                        { template: _.template('<div id="id-toolbar-menu-pageposition" class="menu-pageposition"></div>') },
                                         this.mnuPageNumCurrentPos = new Common.UI.MenuItem({
                                             caption: this.textToCurrent,
                                             lock: this.mnuPageNumCurrentPos.options.lock,
@@ -2744,7 +2938,7 @@ define([
                             }),
                             this.mnuInsertPageCount = new Common.UI.MenuItem({
                                 caption: this.textInsertPageCount,
-                                    lock: this.mnuInsertPageCount.options.lock,
+                                lock: this.mnuInsertPageCount.options.lock,
                                 disabled: this.mnuInsertPageCount.isDisabled()
                             })
                         ]
@@ -2758,18 +2952,18 @@ define([
                 this.paragraphControls.push(this.mnuInsertPageCount);
                 this.lockControls.push(this.mnuInsertPageCount);
 
-                this.btnInsertChart.setMenu( new Common.UI.Menu({
+                this.btnInsertChart.setMenu(new Common.UI.Menu({
                     style: 'width: 364px;padding-top: 12px;',
                     items: [
-                        {template: _.template('<div id="id-toolbar-menu-insertchart" class="menu-insertchart"></div>')}
+                        { template: _.template('<div id="id-toolbar-menu-insertchart" class="menu-insertchart"></div>') }
                     ]
                 }));
 
-                var onShowBefore = function(menu) {
+                var onShowBefore = function (menu) {
                     var picker = new Common.UI.DataView({
                         el: $('#id-toolbar-menu-insertchart'),
                         parentMenu: menu,
-                        outerMenu: {menu: menu, index:0},
+                        outerMenu: { menu: menu, index: 0 },
                         showLast: false,
                         restoreHeight: 535,
                         groups: new Common.UI.DataViewGroupStore(Common.define.chartData.getChartGroupData()),
@@ -2781,7 +2975,7 @@ define([
                             me.fireEvent('add:chart', [record.get('type')]);
                     });
                     menu.off('show:before', onShowBefore);
-                    menu.setInnerMenu([{menu: picker, index: 0}]);
+                    menu.setInnerMenu([{ menu: picker, index: 0 }]);
                 };
                 this.btnInsertChart.menu.on('show:before', onShowBefore);
 
@@ -2806,15 +3000,16 @@ define([
                             iconCls: item.icon ? 'menu__icon ' + item.icon : undefined,
                             menu: new Common.UI.Menu({
                                 items: [
-                                    {template: _.template('<div id="' + item.id + '" class="menu-add-smart-art margin-left-5" style="width: ' + width + 'px; height: 500px;"></div>')}
+                                    { template: _.template('<div id="' + item.id + '" class="menu-add-smart-art margin-left-5" style="width: ' + width + 'px; height: 500px;"></div>') }
                                 ],
                                 menuAlign: 'tl-tr',
-                            })}, true);
+                            })
+                        }, true);
                     });
                     var sa_items = me.btnInsertSmartArt.menu.getItems(true);
                     sa_items.forEach(function (item, index) {
                         var items = [];
-                        for (var i=0; i<item.options.itemsLength; i++) {
+                        for (var i = 0; i < item.options.itemsLength; i++) {
                             items.push({
                                 isLoading: true
                             });
@@ -2824,21 +3019,21 @@ define([
                             parentMenu: sa_items[index].menu,
                             itemTemplate: _.template([
                                 '<% if (isLoading) { %>',
-                                    '<div class="loading-item" style="width: 70px; height: 70px;">',
-                                        '<i class="loading-spinner"></i>',
-                                    '</div>',
+                                '<div class="loading-item" style="width: 70px; height: 70px;">',
+                                '<i class="loading-spinner"></i>',
+                                '</div>',
                                 '<% } else { %>',
-                                    '<div>',
-                                        '<img src="<%= imageUrl %>" width="' + 70 + '" height="' + 70 + '" />',
-                                    '</div>',
+                                '<div>',
+                                '<img src="<%= imageUrl %>" width="' + 70 + '" height="' + 70 + '" />',
+                                '</div>',
                                 '<% } %>'
-                                ].join('')),
+                            ].join('')),
                             store: new Common.UI.DataViewStore(items),
                             delayRenderTips: true,
                             scrollAlwaysVisible: true,
                             showLast: false
                         });
-                        item.menuPicker.on('item:click', function(picker, item, record, e) {
+                        item.menuPicker.on('item:click', function (picker, item, record, e) {
                             if (record && record.get('value') !== null) {
                                 me.fireEvent('insert:smartart', [record.get('value')]);
                             }
@@ -2860,13 +3055,13 @@ define([
 
                 var onShowBeforeTextArt = function (menu) {
                     var collection = DE.getCollection('Common.Collections.TextArt');
-                    if (collection.length<1)
+                    if (collection.length < 1)
                         DE.getController('Main').fillTextArt(me.api.asc_getTextArtPreviews());
                     var picker = new Common.UI.DataView({
                         el: $('#id-toolbar-menu-insart'),
                         store: collection,
                         parentMenu: menu,
-                        outerMenu: {menu: menu, index:0},
+                        outerMenu: { menu: menu, index: 0 },
                         showLast: false,
                         itemTemplate: _.template('<div class="item-art"><img src="<%= imageUrl %>" id="<%= id %>" style="width:50px;height:50px;"></div>')
                     });
@@ -2876,7 +3071,7 @@ define([
                         if (e.type !== 'click') menu.hide();
                     });
                     menu.off('show:before', onShowBeforeTextArt);
-                    menu.setInnerMenu([{menu: picker, index: 0}]);
+                    menu.setInnerMenu([{ menu: picker, index: 0 }]);
                 };
                 this.btnInsertTextArt.menu.on('show:before', onShowBeforeTextArt);
 
@@ -2886,7 +3081,7 @@ define([
                             caption: this.tipInsertHorizontalText,
                             checkable: true,
                             checkmark: false,
-                            iconCls     : 'menu__icon btn-text',
+                            iconCls: 'menu__icon btn-text',
                             toggleGroup: 'textbox',
                             value: 'textRect',
                             iconClsForMainBtn: 'btn-big-text'
@@ -2895,7 +3090,7 @@ define([
                             caption: this.tipInsertVerticalText,
                             checkable: true,
                             checkmark: false,
-                            iconCls     : 'menu__icon btn-text-vertical',
+                            iconCls: 'menu__icon btn-text-vertical',
                             toggleGroup: 'textbox',
                             value: 'textRectVertical',
                             iconClsForMainBtn: 'btn-big-text-vertical'
@@ -2905,49 +3100,49 @@ define([
 
                 // set dataviews
                 this.specSymbols = [
-                    {symbol: 8226,     description: this.textBullet},
-                    {symbol: 8364,     description: this.textEuro},
-                    {symbol: 65284,    description: this.textDollar},
-                    {symbol: 165,      description: this.textYen},
-                    {symbol: 169,      description: this.textCopyright},
-                    {symbol: 174,      description: this.textRegistered},
-                    {symbol: 189,      description: this.textOneHalf},
-                    {symbol: 188,      description: this.textOneQuarter},
-                    {symbol: 8800,     description: this.textNotEqualTo},
-                    {symbol: 177,      description: this.textPlusMinus},
-                    {symbol: 247,      description: this.textDivision},
-                    {symbol: 8730,     description: this.textSquareRoot},
-                    {symbol: 8804,     description: this.textLessEqual},
-                    {symbol: 8805,     description: this.textGreaterEqual},
-                    {symbol: 8482,     description: this.textTradeMark},
-                    {symbol: 8734,     description: this.textInfinity},
-                    {symbol: 126,      description: this.textTilde},
-                    {symbol: 176,      description: this.textDegree},
-                    {symbol: 167,      description: this.textSection},
-                    {symbol: 945,      description: this.textAlpha},
-                    {symbol: 946,      description: this.textBetta},
-                    {symbol: 960,      description: this.textLetterPi},
-                    {symbol: 916,      description: this.textDelta},
-                    {symbol: 9786,     description: this.textSmile},
-                    {symbol: 9829,     description: this.textBlackHeart}
+                    { symbol: 8226, description: this.textBullet },
+                    { symbol: 8364, description: this.textEuro },
+                    { symbol: 65284, description: this.textDollar },
+                    { symbol: 165, description: this.textYen },
+                    { symbol: 169, description: this.textCopyright },
+                    { symbol: 174, description: this.textRegistered },
+                    { symbol: 189, description: this.textOneHalf },
+                    { symbol: 188, description: this.textOneQuarter },
+                    { symbol: 8800, description: this.textNotEqualTo },
+                    { symbol: 177, description: this.textPlusMinus },
+                    { symbol: 247, description: this.textDivision },
+                    { symbol: 8730, description: this.textSquareRoot },
+                    { symbol: 8804, description: this.textLessEqual },
+                    { symbol: 8805, description: this.textGreaterEqual },
+                    { symbol: 8482, description: this.textTradeMark },
+                    { symbol: 8734, description: this.textInfinity },
+                    { symbol: 126, description: this.textTilde },
+                    { symbol: 176, description: this.textDegree },
+                    { symbol: 167, description: this.textSection },
+                    { symbol: 945, description: this.textAlpha },
+                    { symbol: 946, description: this.textBetta },
+                    { symbol: 960, description: this.textLetterPi },
+                    { symbol: 916, description: this.textDelta },
+                    { symbol: 9786, description: this.textSmile },
+                    { symbol: 9829, description: this.textBlackHeart }
                 ];
                 this.mnuInsertSymbolsPicker = new Common.UI.DataView({
                     el: $('#id-toolbar-menu-symbols'),
                     parentMenu: this.btnInsertSymbol.menu,
-                    outerMenu: {menu: this.btnInsertSymbol.menu, index:0},
+                    outerMenu: { menu: this.btnInsertSymbol.menu, index: 0 },
                     restoreHeight: 290,
                     delayRenderTips: true,
                     scrollAlwaysVisible: true,
                     store: new Common.UI.DataViewStore(this.loadRecentSymbolsFromStorage()),
                     itemTemplate: _.template('<div class="item-symbol" dir="ltr" <% if (typeof font !== "undefined" && font !=="") { %> style ="font-family: <%= font %>"<% } %>>&#<%= symbol %></div>')
                 });
-                this.btnInsertSymbol.menu.setInnerMenu([{menu: this.mnuInsertSymbolsPicker, index: 0}]);
-                this.btnInsertSymbol.menu.on('show:before',  _.bind(function() {
+                this.btnInsertSymbol.menu.setInnerMenu([{ menu: this.mnuInsertSymbolsPicker, index: 0 }]);
+                this.btnInsertSymbol.menu.on('show:before', _.bind(function () {
                     this.mnuInsertSymbolsPicker.deselectAll();
                 }, this));
 
                 // Numbering
-                var loadPreset = function(url, lang, callback) {
+                var loadPreset = function (url, lang, callback) {
                     lang = (lang || 'en').replace('_', '-').toLowerCase();
                     Common.Utils.loadConfig(url, function (langJson) {
                         var presets;
@@ -2976,35 +3171,35 @@ define([
                     '{"Type":"bullet","Lvl":[{"lvlJc":"left","suff":"tab","numFmt":{"val":"bullet"},"lvlText":"–","rPr":{"rFonts":{"ascii":"Arial","cs":"Arial","eastAsia":"Arial","hAnsi":"Arial"}}}]}'
                 ];
 
-                var listSettings = {recentPath: 'de-recent-bullets', recentCount: 6, recentGroup: 'menu-bullets-group-recent', docGroup: 'menu-bullets-group-doc', docName: this.txtGroupBulletDoc},
+                var listSettings = { recentPath: 'de-recent-bullets', recentCount: 6, recentGroup: 'menu-bullets-group-recent', docGroup: 'menu-bullets-group-doc', docName: this.txtGroupBulletDoc },
                     recents = this.loadListPresetsFromStorage(listSettings.recentPath, listSettings.recentGroup, listSettings.recentCount),
-                    groups = (recents.length>0) ? [{id: listSettings.recentGroup, caption: this.txtGroupRecent, type: 0}] : [],
+                    groups = (recents.length > 0) ? [{ id: listSettings.recentGroup, caption: this.txtGroupRecent, type: 0 }] : [],
                     libGroup = 'menu-bullets-group-lib';
-                groups.push({id: libGroup, caption: this.txtGroupBulletLib, type: 1});
+                groups.push({ id: libGroup, caption: this.txtGroupBulletLib, type: 1 });
 
                 this.mnuMarkersPicker = new Common.UI.DataView({
                     el: $('#id-toolbar-menu-markers'),
                     parentMenu: this.btnMarkers.menu,
-                    outerMenu:  {menu: this.btnMarkers.menu, index: 0},
+                    outerMenu: { menu: this.btnMarkers.menu, index: 0 },
                     restoreHeight: 290,
                     delayRenderTips: true,
                     scrollAlwaysVisible: true,
                     listSettings: listSettings,
                     groups: new Common.UI.DataViewGroupStore(groups),
                     store: new Common.UI.DataViewStore(recents.concat([
-                        {id: 'id-markers-' + Common.UI.getId(), numberingInfo: me._markersArr[0], skipRenderOnChange: true, tip: this.textNone, group : libGroup, type: 1},
-                        {id: 'id-markers-' + Common.UI.getId(), numberingInfo: me._markersArr[1], skipRenderOnChange: true, tip: this.tipMarkersFRound, group : libGroup, type: 1},
-                        {id: 'id-markers-' + Common.UI.getId(), numberingInfo: me._markersArr[2], skipRenderOnChange: true, tip: this.tipMarkersHRound, group : libGroup, type: 1},
-                        {id: 'id-markers-' + Common.UI.getId(), numberingInfo: me._markersArr[3], skipRenderOnChange: true, tip: this.tipMarkersFSquare, group : libGroup, type: 1},
-                        {id: 'id-markers-' + Common.UI.getId(), numberingInfo: me._markersArr[4], skipRenderOnChange: true, tip: this.tipMarkersStar, group : libGroup, type: 1},
-                        {id: 'id-markers-' + Common.UI.getId(), numberingInfo: me._markersArr[5], skipRenderOnChange: true, tip: this.tipMarkersArrow, group : libGroup, type: 1},
-                        {id: 'id-markers-' + Common.UI.getId(), numberingInfo: me._markersArr[6], skipRenderOnChange: true, tip: this.tipMarkersCheckmark, group : libGroup, type: 1},
-                        {id: 'id-markers-' + Common.UI.getId(), numberingInfo: me._markersArr[7], skipRenderOnChange: true, tip: this.tipMarkersFRhombus, group : libGroup, type: 1},
-                        {id: 'id-markers-' + Common.UI.getId(), numberingInfo: me._markersArr[8], skipRenderOnChange: true, tip: this.tipMarkersDash, group : libGroup, type: 1}
+                        { id: 'id-markers-' + Common.UI.getId(), numberingInfo: me._markersArr[0], skipRenderOnChange: true, tip: this.textNone, group: libGroup, type: 1 },
+                        { id: 'id-markers-' + Common.UI.getId(), numberingInfo: me._markersArr[1], skipRenderOnChange: true, tip: this.tipMarkersFRound, group: libGroup, type: 1 },
+                        { id: 'id-markers-' + Common.UI.getId(), numberingInfo: me._markersArr[2], skipRenderOnChange: true, tip: this.tipMarkersHRound, group: libGroup, type: 1 },
+                        { id: 'id-markers-' + Common.UI.getId(), numberingInfo: me._markersArr[3], skipRenderOnChange: true, tip: this.tipMarkersFSquare, group: libGroup, type: 1 },
+                        { id: 'id-markers-' + Common.UI.getId(), numberingInfo: me._markersArr[4], skipRenderOnChange: true, tip: this.tipMarkersStar, group: libGroup, type: 1 },
+                        { id: 'id-markers-' + Common.UI.getId(), numberingInfo: me._markersArr[5], skipRenderOnChange: true, tip: this.tipMarkersArrow, group: libGroup, type: 1 },
+                        { id: 'id-markers-' + Common.UI.getId(), numberingInfo: me._markersArr[6], skipRenderOnChange: true, tip: this.tipMarkersCheckmark, group: libGroup, type: 1 },
+                        { id: 'id-markers-' + Common.UI.getId(), numberingInfo: me._markersArr[7], skipRenderOnChange: true, tip: this.tipMarkersFRhombus, group: libGroup, type: 1 },
+                        { id: 'id-markers-' + Common.UI.getId(), numberingInfo: me._markersArr[8], skipRenderOnChange: true, tip: this.tipMarkersDash, group: libGroup, type: 1 }
                     ])),
                     itemTemplate: _.template('<div id="<%= id %>" class="item-markerlist"></div>')
                 });
-                this.btnMarkers.menu.setInnerMenu([{menu: this.mnuMarkersPicker, index: 0}]);
+                this.btnMarkers.menu.setInnerMenu([{ menu: this.mnuMarkersPicker, index: 0 }]);
 
                 _conf = this.mnuNumbersPicker.conf;
                 this._numbersArr = [
@@ -3018,15 +3213,15 @@ define([
                     '{"Type":"number","Lvl":[{"lvlJc":"right","suff":"tab","numFmt":{"val":"lowerRoman"},"lvlText":"%1."}]}'
                 ];
 
-                listSettings = {recentPath: 'de-recent-numbering', recentCount: 8, recentGroup: 'menu-numbering-group-recent', docGroup: 'menu-numbering-group-doc', docName: this.txtGroupNumDoc};
+                listSettings = { recentPath: 'de-recent-numbering', recentCount: 8, recentGroup: 'menu-numbering-group-recent', docGroup: 'menu-numbering-group-doc', docName: this.txtGroupNumDoc };
                 _conf.recents = this.loadListPresetsFromStorage(listSettings.recentPath, listSettings.recentGroup, listSettings.recentCount);
                 _conf.libGroup = 'menu-numbering-group-lib';
-                groups = (_conf.recents.length>0) ? [{id: listSettings.recentGroup, caption: this.txtGroupRecent, type: 0}] : [];
-                groups.push({id: _conf.libGroup, caption: this.txtGroupNumLib, type: 1});
+                groups = (_conf.recents.length > 0) ? [{ id: listSettings.recentGroup, caption: this.txtGroupRecent, type: 0 }] : [];
+                groups.push({ id: _conf.libGroup, caption: this.txtGroupNumLib, type: 1 });
                 this.mnuNumbersPicker = new Common.UI.DataView({
                     el: $('#id-toolbar-menu-numbering'),
                     parentMenu: this.btnNumbers.menu,
-                    outerMenu:  {menu: this.btnNumbers.menu, index: 0},
+                    outerMenu: { menu: this.btnNumbers.menu, index: 0 },
                     restoreHeight: 403,
                     delayRenderTips: true,
                     scrollAlwaysVisible: true,
@@ -3035,33 +3230,33 @@ define([
                     store: new Common.UI.DataViewStore(),
                     itemTemplate: _.template('<div id="<%= id %>" class="item-multilevellist"></div>')
                 });
-                this.btnNumbers.menu.setInnerMenu([{menu: this.mnuNumbersPicker, index: 0}]);
+                this.btnNumbers.menu.setInnerMenu([{ menu: this.mnuNumbersPicker, index: 0 }]);
                 this.mnuNumbersPicker.conf = _conf;
 
                 loadPreset('resources/numbering/numbering-lists.json', this.mode.lang, function (presets) {
                     var libGroup = me.mnuNumbersPicker.conf.libGroup,
                         arr = [
-                        {id: 'id-numbers-' + Common.UI.getId(), numberingInfo: me._numbersArr[0], skipRenderOnChange: true, group : libGroup, type: 1},
-                        {id: 'id-numbers-' + Common.UI.getId(), numberingInfo: me._numbersArr[1], skipRenderOnChange: true, group : libGroup, type: 1},
-                        {id: 'id-numbers-' + Common.UI.getId(), numberingInfo: me._numbersArr[2], skipRenderOnChange: true, group : libGroup, type: 1},
-                        {id: 'id-numbers-' + Common.UI.getId(), numberingInfo: me._numbersArr[3], skipRenderOnChange: true, group : libGroup, type: 1},
-                        {id: 'id-numbers-' + Common.UI.getId(), numberingInfo: me._numbersArr[4], skipRenderOnChange: true, group : libGroup, type: 1},
-                        {id: 'id-numbers-' + Common.UI.getId(), numberingInfo: me._numbersArr[5], skipRenderOnChange: true, group : libGroup, type: 1},
-                        {id: 'id-numbers-' + Common.UI.getId(), numberingInfo: me._numbersArr[6], skipRenderOnChange: true, group : libGroup, type: 1},
-                        {id: 'id-numbers-' + Common.UI.getId(), numberingInfo: me._numbersArr[7], skipRenderOnChange: true, group : libGroup, type: 1}
-                    ];
-                    presets && presets.forEach(function (item){
-                        arr.push({id: 'id-numbers-' + Common.UI.getId(), numberingInfo: JSON.stringify(item), skipRenderOnChange: true, group : libGroup, type: 1});
+                            { id: 'id-numbers-' + Common.UI.getId(), numberingInfo: me._numbersArr[0], skipRenderOnChange: true, group: libGroup, type: 1 },
+                            { id: 'id-numbers-' + Common.UI.getId(), numberingInfo: me._numbersArr[1], skipRenderOnChange: true, group: libGroup, type: 1 },
+                            { id: 'id-numbers-' + Common.UI.getId(), numberingInfo: me._numbersArr[2], skipRenderOnChange: true, group: libGroup, type: 1 },
+                            { id: 'id-numbers-' + Common.UI.getId(), numberingInfo: me._numbersArr[3], skipRenderOnChange: true, group: libGroup, type: 1 },
+                            { id: 'id-numbers-' + Common.UI.getId(), numberingInfo: me._numbersArr[4], skipRenderOnChange: true, group: libGroup, type: 1 },
+                            { id: 'id-numbers-' + Common.UI.getId(), numberingInfo: me._numbersArr[5], skipRenderOnChange: true, group: libGroup, type: 1 },
+                            { id: 'id-numbers-' + Common.UI.getId(), numberingInfo: me._numbersArr[6], skipRenderOnChange: true, group: libGroup, type: 1 },
+                            { id: 'id-numbers-' + Common.UI.getId(), numberingInfo: me._numbersArr[7], skipRenderOnChange: true, group: libGroup, type: 1 }
+                        ];
+                    presets && presets.forEach(function (item) {
+                        arr.push({ id: 'id-numbers-' + Common.UI.getId(), numberingInfo: JSON.stringify(item), skipRenderOnChange: true, group: libGroup, type: 1 });
                     });
                     me.mnuNumbersPicker.store.reset(me.mnuNumbersPicker.conf.recents.concat(arr));
                 });
 
                 _conf = this.mnuMultilevelPicker.conf;
-                listSettings = {recentPath: 'de-recent-multilevels', recentCount: 8, recentGroup: 'menu-multilevels-group-recent', docGroup: 'menu-multilevels-group-doc', docName: this.txtGroupMultiDoc};
+                listSettings = { recentPath: 'de-recent-multilevels', recentCount: 8, recentGroup: 'menu-multilevels-group-recent', docGroup: 'menu-multilevels-group-doc', docName: this.txtGroupMultiDoc };
                 _conf.recents = this.loadListPresetsFromStorage(listSettings.recentPath, listSettings.recentGroup, listSettings.recentCount);
                 _conf.libGroup = 'menu-multilevels-group-lib';
-                groups = (_conf.recents.length>0) ? [{id: listSettings.recentGroup, caption: this.txtGroupRecent, type: 0}] : [];
-                groups.push({id: _conf.libGroup, caption: this.txtGroupMultiLib, type: 1});
+                groups = (_conf.recents.length > 0) ? [{ id: listSettings.recentGroup, caption: this.txtGroupRecent, type: 0 }] : [];
+                groups.push({ id: _conf.libGroup, caption: this.txtGroupMultiLib, type: 1 });
                 this._multilevelArr = [
                     '{"Type":"remove"}',
                     '{"Type":"number","Lvl":[{"lvlJc":"left","suff":"tab","numFmt":{"val":"decimal"},"lvlText":"%1)","pPr":{"ind":{"left":360,"firstLine":-360}}},{"lvlJc":"left","suff":"tab","numFmt":{"val":"lowerLetter"},"lvlText":"%2)","pPr":{"ind":{"left":720,"firstLine":-360}}},{"lvlJc":"left","suff":"tab","numFmt":{"val":"lowerRoman"},"lvlText":"%3)","pPr":{"ind":{"left":1080,"firstLine":-360}}},{"lvlJc":"left","suff":"tab","numFmt":{"val":"decimal"},"lvlText":"%4)","pPr":{"ind":{"left":1440,"firstLine":-360}}},{"lvlJc":"left","suff":"tab","numFmt":{"val":"lowerLetter"},"lvlText":"%5)","pPr":{"ind":{"left":1800,"firstLine":-360}}},{"lvlJc":"left","suff":"tab","numFmt":{"val":"lowerRoman"},"lvlText":"%6)","pPr":{"ind":{"left":2160,"firstLine":-360}}},{"lvlJc":"left","suff":"tab","numFmt":{"val":"decimal"},"lvlText":"%7)","pPr":{"ind":{"left":2520,"firstLine":-360}}},{"lvlJc":"left","suff":"tab","numFmt":{"val":"lowerLetter"},"lvlText":"%8)","pPr":{"ind":{"left":2880,"firstLine":-360}}},{"lvlJc":"left","suff":"tab","numFmt":{"val":"lowerRoman"},"lvlText":"%9)","pPr":{"ind":{"left":3240,"firstLine":-360}}}]}',
@@ -3076,7 +3271,7 @@ define([
                 this.mnuMultilevelPicker = new Common.UI.DataView({
                     el: $('#id-toolbar-menu-multilevels'),
                     parentMenu: this.btnMultilevels.menu,
-                    outerMenu:  {menu: this.btnMultilevels.menu, index: 0},
+                    outerMenu: { menu: this.btnMultilevels.menu, index: 0 },
                     restoreHeight: 403,
                     delayRenderTips: true,
                     scrollAlwaysVisible: true,
@@ -3085,28 +3280,28 @@ define([
                     store: new Common.UI.DataViewStore(),
                     itemTemplate: _.template('<div id="<%= id %>" class="item-multilevellist"></div>')
                 });
-                this.btnMultilevels.menu.setInnerMenu([{menu: this.mnuMultilevelPicker, index: 0}]);
+                this.btnMultilevels.menu.setInnerMenu([{ menu: this.mnuMultilevelPicker, index: 0 }]);
                 this.mnuMultilevelPicker.conf = _conf;
 
                 loadPreset('resources/numbering/multilevel-lists.json', this.mode.lang, function (presets) {
                     var libGroup = me.mnuMultilevelPicker.conf.libGroup,
                         arr = [
-                        {id: 'id-multilevels-' + Common.UI.getId(), numberingInfo: me._multilevelArr[0], skipRenderOnChange: true, group : libGroup, type: 1},
-                        {id: 'id-multilevels-' + Common.UI.getId(), numberingInfo: me._multilevelArr[1], skipRenderOnChange: true, group : libGroup, type: 1},
-                        {id: 'id-multilevels-' + Common.UI.getId(), numberingInfo: me._multilevelArr[2], skipRenderOnChange: true, group : libGroup, type: 1},
-                        {id: 'id-multilevels-' + Common.UI.getId(), numberingInfo: me._multilevelArr[3], skipRenderOnChange: true, group : libGroup, type: 1},
-                        {id: 'id-multilevels-' + Common.UI.getId(), numberingInfo: me._multilevelArr[4], skipRenderOnChange: true, group : libGroup, type: 1},
-                        {id: 'id-multilevels-' + Common.UI.getId(), numberingInfo: me._multilevelArr[5], skipRenderOnChange: true, group : libGroup, type: 1}
-                    ];
+                            { id: 'id-multilevels-' + Common.UI.getId(), numberingInfo: me._multilevelArr[0], skipRenderOnChange: true, group: libGroup, type: 1 },
+                            { id: 'id-multilevels-' + Common.UI.getId(), numberingInfo: me._multilevelArr[1], skipRenderOnChange: true, group: libGroup, type: 1 },
+                            { id: 'id-multilevels-' + Common.UI.getId(), numberingInfo: me._multilevelArr[2], skipRenderOnChange: true, group: libGroup, type: 1 },
+                            { id: 'id-multilevels-' + Common.UI.getId(), numberingInfo: me._multilevelArr[3], skipRenderOnChange: true, group: libGroup, type: 1 },
+                            { id: 'id-multilevels-' + Common.UI.getId(), numberingInfo: me._multilevelArr[4], skipRenderOnChange: true, group: libGroup, type: 1 },
+                            { id: 'id-multilevels-' + Common.UI.getId(), numberingInfo: me._multilevelArr[5], skipRenderOnChange: true, group: libGroup, type: 1 }
+                        ];
                     if (presets)
-                        presets.forEach(function (item){
-                            arr.push({id: 'id-multilevels-' + Common.UI.getId(), numberingInfo: JSON.stringify(item), skipRenderOnChange: true, group : libGroup, type: 1});
+                        presets.forEach(function (item) {
+                            arr.push({ id: 'id-multilevels-' + Common.UI.getId(), numberingInfo: JSON.stringify(item), skipRenderOnChange: true, group: libGroup, type: 1 });
                         });
                     else
                         arr = arr.concat([
-                        {id: 'id-multilevels-' + Common.UI.getId(), numberingInfo: me._multilevelArr[6], skipRenderOnChange: true, group : libGroup, type: 1},
-                        {id: 'id-multilevels-' + Common.UI.getId(), numberingInfo: me._multilevelArr[7], skipRenderOnChange: true, group : libGroup, type: 1}
-                    ]);
+                            { id: 'id-multilevels-' + Common.UI.getId(), numberingInfo: me._multilevelArr[6], skipRenderOnChange: true, group: libGroup, type: 1 },
+                            { id: 'id-multilevels-' + Common.UI.getId(), numberingInfo: me._multilevelArr[7], skipRenderOnChange: true, group: libGroup, type: 1 }
+                        ]);
                     me.mnuMultilevelPicker.store.reset(me.mnuMultilevelPicker.conf.recents.concat(arr));
                 });
 
@@ -3116,8 +3311,8 @@ define([
                     el: $('#id-toolbar-menu-pageposition'),
                     lock: this.mnuPageNumberPosPicker.options.lock,
                     allowScrollbar: false,
-                    parentMenu:  this.mnuInsertPageNum.menu,
-                    outerMenu:  {menu: this.mnuInsertPageNum.menu, index: 0},
+                    parentMenu: this.mnuInsertPageNum.menu,
+                    outerMenu: { menu: this.mnuInsertPageNum.menu, index: 0 },
                     showLast: false,
                     store: new Common.UI.DataViewStore([
                         {
@@ -3167,7 +3362,7 @@ define([
                 });
                 this.mnuPageNumberPosPicker.keepState = keepState;
                 _conf && this.mnuPageNumberPosPicker.setDisabled(_conf.disabled);
-                this.mnuInsertPageNum.menu.setInnerMenu([{menu: this.mnuPageNumberPosPicker, index: 0}]);
+                this.mnuInsertPageNum.menu.setInnerMenu([{ menu: this.mnuPageNumberPosPicker, index: 0 }]);
 
                 this.mnuTablePicker = new Common.UI.DimensionPicker({
                     el: $('#id-toolbar-menu-tablepicker'),
@@ -3178,7 +3373,7 @@ define([
                 });
             },
 
-            onToolbarAfterRender: function(toolbar) {
+            onToolbarAfterRender: function (toolbar) {
                 // DataView and pickers
                 //
                 var colorVal;
@@ -3202,10 +3397,10 @@ define([
                         themecolors: 0,
                         effects: 0,
                         columns: 4,
-                        outerMenu: {menu: this.btnHighlightColor.menu, index: 0, focusOnShow: true}
+                        outerMenu: { menu: this.btnHighlightColor.menu, index: 0, focusOnShow: true }
                     });
                     this.btnHighlightColor.setPicker(this.mnuHighlightColorPicker);
-                    this.btnHighlightColor.menu.setInnerMenu([{menu: this.mnuHighlightColorPicker, index: 0}]);
+                    this.btnHighlightColor.menu.setInnerMenu([{ menu: this.mnuHighlightColorPicker, index: 0 }]);
                 }
 
                 if (this.btnFontColor.cmpEl) {
@@ -3230,9 +3425,9 @@ define([
                         ],
                         themecolors: 0,
                         effects: 0,
-                        outerMenu: {menu: this.mnuHighlightControls, index: 2}
+                        outerMenu: { menu: this.mnuHighlightControls, index: 2 }
                     });
-                    this.mnuHighlightControls.setInnerMenu([{menu: this.mnuControlsColorPicker, index: 2}]);
+                    this.mnuHighlightControls.setInnerMenu([{ menu: this.mnuControlsColorPicker, index: 2 }]);
                 }
 
                 if (this.btnPageColor.cmpEl) {
@@ -3269,10 +3464,10 @@ define([
                     }
                 }
                 if (this.spinners) {
-                    for (var i=0; i<this.spinners.length; i++) {
+                    for (var i = 0; i < this.spinners.length; i++) {
                         var spinner = this.spinners[i].cmp;
                         spinner.setDefaultUnit(Common.Utils.Metric.getCurrentMetricName());
-                        spinner.setStep(Common.Utils.Metric.getCurrentMetric()==Common.Utils.Metric.c_MetricUnits.pt ? 1 : this.spinners[i].step);
+                        spinner.setStep(Common.Utils.Metric.getCurrentMetric() == Common.Utils.Metric.c_MetricUnits.pt ? 1 : this.spinners[i].step);
                     }
                 }
             },
@@ -3291,12 +3486,12 @@ define([
             setMode: function (mode) {
                 if (mode.isDisconnected) {
                     this.lockToolbar(Common.enumLock.lostConnect, true);
-                    if ( this.synchTooltip )
+                    if (this.synchTooltip)
                         this.synchTooltip.hide();
                     if (!mode.enableDownload)
-                        this.lockToolbar(Common.enumLock.cantPrint, true, {array: [this.btnPrint]});
+                        this.lockToolbar(Common.enumLock.cantPrint, true, { array: [this.btnPrint] });
                 } else {
-                    this.lockToolbar(Common.enumLock.cantPrint, !mode.canPrint, {array: [this.btnPrint]});
+                    this.lockToolbar(Common.enumLock.cantPrint, !mode.canPrint, { array: [this.btnPrint] });
                     !mode.canPrint && this.btnPrint && this.btnPrint.hide();
                 }
 
@@ -3305,7 +3500,7 @@ define([
 
                 this.listStylesAdditionalMenuItem && this.listStylesAdditionalMenuItem.setVisible(mode.canEditStyles);
                 this.btnContentControls && this.btnContentControls.menu.items[10].setVisible(mode.canEditContentControl);
-                this.mnuInsertImage && this.mnuInsertImage.items[2].setVisible(this.mode.canRequestInsertImage || this.mode.fileChoiceUrl && this.mode.fileChoiceUrl.indexOf("{documentType}")>-1);
+                this.mnuInsertImage && this.mnuInsertImage.items[2].setVisible(this.mode.canRequestInsertImage || this.mode.fileChoiceUrl && this.mode.fileChoiceUrl.indexOf("{documentType}") > -1);
             },
 
             onSendThemeColorSchemes: function (schemas) {
@@ -3398,10 +3593,10 @@ define([
             },
 
             synchronizeChanges: function () {
-                if ( !this._state.previewmode && this.btnCollabChanges.rendered ) {
+                if (!this._state.previewmode && this.btnCollabChanges.rendered) {
                     var me = this;
 
-                    if ( me.btnCollabChanges.cmpEl.hasClass('notify') ) {
+                    if (me.btnCollabChanges.cmpEl.hasClass('notify')) {
                         me.btnCollabChanges.cmpEl.removeClass('notify');
                         if (this.synchTooltip)
                             this.synchTooltip.hide();
@@ -3423,10 +3618,10 @@ define([
                 var me = this;
                 var length = _.size(editusers);
                 var cls = (length > 1) ? 'btn-save-coauth' : 'btn-save';
-                if ( cls !== me.btnSaveCls && me.btnCollabChanges.rendered ) {
-                    me.btnSaveTip = ((length > 1) ? me.tipSaveCoauth : me.tipSave ) + Common.Utils.String.platformKey('Ctrl+S');
+                if (cls !== me.btnSaveCls && me.btnCollabChanges.rendered) {
+                    me.btnSaveTip = ((length > 1) ? me.tipSaveCoauth : me.tipSave) + Common.Utils.String.platformKey('Ctrl+S');
                     me.btnCollabChanges.updateHint(me.btnSaveTip);
-                    me.btnCollabChanges.changeIcon({next: cls, curr: me.btnSaveCls});
+                    me.btnCollabChanges.changeIcon({ next: cls, curr: me.btnSaveCls });
                     me.btnSaveCls = cls;
                 }
             },
@@ -3472,102 +3667,102 @@ define([
                     this.api.asc_RemoveAllCustomStyles();
             },
 
-            onUpdateLastCustomMargins: function(props) {
+            onUpdateLastCustomMargins: function (props) {
                 if (!this.btnPageMargins) return;
 
                 var top = props ? props.get_TopMargin() : Common.localStorage.getItem("de-pgmargins-top"),
                     left = props ? props.get_LeftMargin() : Common.localStorage.getItem("de-pgmargins-left"),
                     bottom = props ? props.get_BottomMargin() : Common.localStorage.getItem("de-pgmargins-bottom"),
                     right = props ? props.get_RightMargin() : Common.localStorage.getItem("de-pgmargins-right");
-                if ( top!==null && left!==null && bottom!==null && right!==null ) {
+                if (top !== null && left !== null && bottom !== null && right !== null) {
                     var mnu = this.btnPageMargins.menu.items[0];
                     mnu.options.value = mnu.value = [parseFloat(top), parseFloat(left), parseFloat(bottom), parseFloat(right)];
                     mnu.setVisible(true);
-                    $(mnu.el).html(mnu.template({id: Common.UI.getId(), caption : mnu.caption, options : mnu.options}));
+                    $(mnu.el).html(mnu.template({ id: Common.UI.getId(), caption: mnu.caption, options: mnu.options }));
                 } else
                     this.btnPageMargins.menu.items[0].setVisible(false);
             },
 
-            loadRecentSymbolsFromStorage: function(){
+            loadRecentSymbolsFromStorage: function () {
                 var recents = Common.localStorage.getItem('de-fastRecentSymbols');
-                var arr =(!!recents) ? JSON.parse(recents) :
+                var arr = (!!recents) ? JSON.parse(recents) :
                     [
-                        { symbol: 8226,     font: 'Arial'},
-                        { symbol: 8364,     font: 'Arial'},
-                        { symbol: 65284,    font: 'Arial'},
-                        { symbol: 165,      font: 'Arial'},
-                        { symbol: 169,      font: 'Arial'},
-                        { symbol: 174,      font: 'Arial'},
-                        { symbol: 189,      font: 'Arial'},
-                        { symbol: 188,      font: 'Arial'},
-                        { symbol: 8800,     font: 'Arial'},
-                        { symbol: 177,      font: 'Arial'},
-                        { symbol: 247,      font: 'Arial'},
-                        { symbol: 8730,     font: 'Arial'},
-                        { symbol: 8804,     font: 'Arial'},
-                        { symbol: 8805,     font: 'Arial'},
-                        { symbol: 8482,     font: 'Arial'},
-                        { symbol: 8734,     font: 'Arial'},
-                        { symbol: 126,      font: 'Arial'},
-                        { symbol: 176,      font: 'Arial'},
-                        { symbol: 167,      font: 'Arial'},
-                        { symbol: 945,      font: 'Arial'},
-                        { symbol: 946,      font: 'Arial'},
-                        { symbol: 960,      font: 'Arial'},
-                        { symbol: 916,      font: 'Arial'},
-                        { symbol: 9786,     font: 'Arial'},
-                        { symbol: 9829,     font: 'Arial'}
+                        { symbol: 8226, font: 'Arial' },
+                        { symbol: 8364, font: 'Arial' },
+                        { symbol: 65284, font: 'Arial' },
+                        { symbol: 165, font: 'Arial' },
+                        { symbol: 169, font: 'Arial' },
+                        { symbol: 174, font: 'Arial' },
+                        { symbol: 189, font: 'Arial' },
+                        { symbol: 188, font: 'Arial' },
+                        { symbol: 8800, font: 'Arial' },
+                        { symbol: 177, font: 'Arial' },
+                        { symbol: 247, font: 'Arial' },
+                        { symbol: 8730, font: 'Arial' },
+                        { symbol: 8804, font: 'Arial' },
+                        { symbol: 8805, font: 'Arial' },
+                        { symbol: 8482, font: 'Arial' },
+                        { symbol: 8734, font: 'Arial' },
+                        { symbol: 126, font: 'Arial' },
+                        { symbol: 176, font: 'Arial' },
+                        { symbol: 167, font: 'Arial' },
+                        { symbol: 945, font: 'Arial' },
+                        { symbol: 946, font: 'Arial' },
+                        { symbol: 960, font: 'Arial' },
+                        { symbol: 916, font: 'Arial' },
+                        { symbol: 9786, font: 'Arial' },
+                        { symbol: 9829, font: 'Arial' }
                     ];
-                arr.forEach(function (item){
+                arr.forEach(function (item) {
                     item.tip = this.getSymbolDescription(item.symbol);
                 }.bind(this));
                 return arr;
             },
 
-            saveSymbol: function(symbol, font) {
-                var maxLength =25,
+            saveSymbol: function (symbol, font) {
+                var maxLength = 25,
                     picker = this.mnuInsertSymbolsPicker;
-                var item = picker.store.find(function(item){
+                var item = picker.store.find(function (item) {
                     return item.get('symbol') == symbol && item.get('font') == font
                 });
 
                 item && picker.store.remove(item);
-                picker.store.add({symbol: symbol, font: font, tip: this.getSymbolDescription(symbol)},{at:0});
+                picker.store.add({ symbol: symbol, font: font, tip: this.getSymbolDescription(symbol) }, { at: 0 });
                 picker.store.length > maxLength && picker.store.remove(picker.store.last());
 
-                var arr = picker.store.map(function (item){
-                    return {symbol: item.get('symbol'), font: item.get('font')};
+                var arr = picker.store.map(function (item) {
+                    return { symbol: item.get('symbol'), font: item.get('font') };
                 });
                 var sJSON = JSON.stringify(arr);
-                Common.localStorage.setItem( 'de-fastRecentSymbols', sJSON);
+                Common.localStorage.setItem('de-fastRecentSymbols', sJSON);
             },
 
-            getSymbolDescription: function(symbol){
-                var  specSymbol = this.specSymbols.find(function (item){return item.symbol == symbol});
+            getSymbolDescription: function (symbol) {
+                var specSymbol = this.specSymbols.find(function (item) { return item.symbol == symbol });
                 return !!specSymbol ? specSymbol.description : this.capBtnInsSymbol + ': ' + symbol;
             },
 
-            loadListPresetsFromStorage: function(path, groupId, recentCount) {
+            loadListPresetsFromStorage: function (path, groupId, recentCount) {
                 var recents = Common.localStorage.getItem(path),
                     arr = [];
                 recents = recents ? JSON.parse(recents) : [];
-                for (var i=0; i<recents.length && i<recentCount; i++) {
-                    arr.push({id: 'id-recent-list-' + Common.UI.getId(), numberingInfo: recents[i], skipRenderOnChange: true, group : groupId, type: 0});
+                for (var i = 0; i < recents.length && i < recentCount; i++) {
+                    arr.push({ id: 'id-recent-list-' + Common.UI.getId(), numberingInfo: recents[i], skipRenderOnChange: true, group: groupId, type: 0 });
                 }
                 return arr;
             },
 
-            saveListPresetToStorage: function(picker) {
+            saveListPresetToStorage: function (picker) {
                 if (picker) {
                     var arr = [];
-                    _.each(picker.store.where({type: 0}), function(rec){
+                    _.each(picker.store.where({ type: 0 }), function (rec) {
                         arr.push(rec.get('numberingInfo'));
                     });
                     Common.localStorage.setItem(picker.options.listSettings.recentPath, JSON.stringify(arr));
                 }
             },
 
-            onDesktopWindow: function() {
+            onDesktopWindow: function () {
                 if (this.synchTooltip && this.synchTooltip.isVisible()) {
                     this.synchTooltip.show(); // change position for visible tip
                 }

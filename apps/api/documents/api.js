@@ -1279,7 +1279,7 @@
 
     function extendAppPath(config,  path) {
         if ( !config.isLocalFile ) {
-            const ver = '/{{PRODUCT_VERSION}}-{{HASH_POSTFIX}}';
+            const ver = '/{{PRODUCT_VERSION}}-7b7acb1d64ef1da1f6c24f51052786fb';
             if ( ver.lastIndexOf('{{') < 0 && path.indexOf(ver) < 0 ) {
                 const pos = path.indexOf('/web-apps/app');
                 if ( pos > 0 )

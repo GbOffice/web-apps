@@ -1,6 +1,9 @@
 <div class="toolbar">
     <div class="box-tabs">
         <div class="extra left"></div>
+        <div class="lr-separator" id="id-box-doc-name">
+            <input id="title-doc-name" autofill="off" autocomplete="off"/></input>
+        </div>
         <%= tabsmarkup %>
         <div class="extra right"></div>
     </div>
